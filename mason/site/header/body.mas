@@ -26,8 +26,12 @@
 
     <div id="login_control">
 % if( 0 ) {
-          <a class="login" href="/solpeople/login.pl">log in</a>
-
+         <div class="logged_out">
+            <a href="/solpeople/login.pl">log in</a>
+            <a class="help" href="/help/index.pl">help</a>
+         </div>
+% }
+% if( 0 ) {
           <form class="login_form" action="/solpeople/login.pl" method="POST">
             <table>
               <tr class="email">
@@ -42,6 +46,7 @@
             <div class="buttons"><input type="submit" value="log in" /> <input type="reset" value="cancel" /></div>
           </form>
 % }
+% if( 1 ) {
          <div class="logged_in">
            <div class="user_name">
              <span class="first_name"><% 'Robert' %></span>
@@ -50,8 +55,10 @@
            <a class="logout">log out</a>
            <div class="user_controls">
              <a href="/solpeople/top-level.pl">MySGN</a>
+             | <a class="help"  href="/help/index.pl">help</a>
            </div>
          </div>
+% }
     </div>
 
     <div id="clone_shoppingcart" style="display: none">
@@ -65,7 +72,6 @@
   <hr id="head_division" />
 
 
-<a class="toplink" href="/help/index.pl">help</a>
 
   <div id="content" summary="" width="740" cellpadding="0" cellspacing="0" border="0">
 <!-- END HEADER -->
