@@ -7,22 +7,27 @@ body {
   font-size: 12px;
   line-height: 1.25;
 }
-#outercontainer { 
-}
-#pagecontent_t { 
-  margin: auto;
+#outercontainer {
+  margin: 0 auto;
   width: 730px;
+
 }
+
+#site_header #title_image { 
+  margin: 0 0 4px 0;
+}
+
+
 #xtratbl {
-background-color:#CCCCFF;
-border: 1px solid #C0C0C0;
+  background-color:#CCCCFF;
+  border: 1px solid #C0C0C0;
 }
+
 #org_content{
 border:1px solid #C0C0C0;
 }
+
 table {
-  font-family: verdana, arial, helvetica, sans-serif;
-  font-size: 12px;
   text-align: left;
   padding: 0;
   border: 0;
@@ -71,54 +76,30 @@ img#sgnlogo {
 img#sgntext { 
   margin: 0 0 2px 12px;
 }
-td.toplink { 
-  text-align: right;
-  vertical-align: middle;
-  padding: 0 18px 0 0;
-  white-space: nowrap;
-}
-a.toplink:link, a.toplink:visited, a.toplink:active {
-  color: black;
-  padding: 0;
-  text-decoration: none;
-  line-height: 1.1;
-  font-family: "Bitstream Vera Sans",Arial,Helvetica,sans-serif;
-}
-a.toplink:hover {
-  padding: 0px 0px 0px 0px;
-  text-decoration: underline;
-}
-a.mytools, a.mytools:link, a.mytools:visited { 
-  font-weight: bold;
-  text-decoration: underline;
-  color: black;
-  padding: 0.1em 0.3em 0.1em 0.3em;
-  line-height: 1.38;
-  margin-left: 1em;
-}
 a.external, a[href ^="http:"] { 
 	background: url(/documents/img/external.png) center right no-repeat;
 	padding-right: 13px;
-}
-
-a.footer {
-	background: none;
-	padding-right: 2px;
 }
 
 a[href ^="mailto:"]  { 
 	background: url(/documents/img/mail_icon.gif) center right no-repeat;
 	padding-right: 16px;
 }
-#pagefooter { 
+
+#site_footer > table { 
   line-height: 1.5;
   border-top: 3px solid #c0c0c0;
   padding-top: 12px;
   margin-top: 15px;
 }
-
-#pagefooter a, #pagefooter a:active, #pagefooter a:link, #pagefooter a:visited { 
+#site_footer a, #site_footer a:active, #site_footer a:link, #site_footer a:visited { 
   color: #666666;
+  background: none;
+  padding-right: 2px;
+}
+#site_footer a.contact { 
+  font-weight: bold;
+  display: block;
 }
 
 #quicksearch_form { 
@@ -875,108 +856,7 @@ a.stealth {
 }
 
 
-/***********   TOOLBARS W/DROPDOWN MENUS ****************/
 
-table#siteheader { 
-  margin: 0 auto 3px auto;
-  width: 740px;
-}
-
-table.toolbar { 
-  width: 100%;
-  margin: 0;
-}
-
-td.toolbar_l, td.toolbar_r { 
-  width: 10px;
-}
-td.toolbar_content { 
-  background: white url(/documents/img/toolbar_content_back.gif) repeat-x top left;
-  padding: 3px 23px 3px 4px;
-  color: black;
-  font-size: 125%;
-  text-align: left;
-  font-family: "Bitstream Vera Sans",Arial,Helvetica,sans-serif;
-}
-td.toolbar_search { 
-  text-align: right;
-  width: 1%;
-  white-space: nowrap;
-  padding: 0 0.35em 0 1em;
-  vertical-align: top;
-}
-a.toolbar_menuname, a.toolbar_menuname:link, a.toolbar_menuname:visited { 
-  color: black;
-  display: block;
-}
-
-table.toolbar_popmenu { 
-  position: absolute;
-  visibility: hidden;
-  z-index: 99;
-  border-top: 1px solid #a6a6a6;
-  border-right: 1px solid #666666;
-  border-bottom: 2px solid black;
-  border-left: 1px solid #666666;
-  text-align: left;
-  margin-left: auto;
-  margin-right: auto;
-  background: #f2f2f2;
-  line-height: 1.1;
-}
-a.toolbar_item_first, a.toolbar_item_first:link, a.toolbar_item_first:visited, a.toolbar_item_first:active,
-a.toolbar_item, a.toolbar_item:link, a.toolbar_item:visited, a.toolbar_item:active, span.toolbar_item {
-  text-decoration: none;
-  color: #222;
-  border: 1px solid #f2f2f2;
-  padding: 0.2em 0.5em 0.2em 0.5em;
-  margin: 0;
-  display: block;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-td.toolbar_item_title { 
-  padding: 4px 2px 2px 2px;
-  font-weight: bold;
-  color: #373737;
-}
-
-span.toolbar_item {
-  font-weight: bold;
-  padding-left: 0.1em;
-}
-
-td.toolbar_item {
-  border-top: 1px solid #cfcfcf;
-}
-
-a.toolbar_item:hover,
-a.toolbar_item_first:hover { 
-  background: #ccccff;
-  border: 1px solid #666666;
-  color: black;
-}
-
-form.quicksearch { 
-  margin: 0;
-  padding: 0;
-}
-input.quicksearch.field { 
-  border: 1px solid #a0a0a0;
-  background: white;
-  padding: 0 0.1em 0 0.15em;
-  height: 18px;
-  font-family: "Charter","Bitstream Vera Serif",Times,serif;
-  font-size: 13px;
-  margin-top: 3px;
-  vertical-align: top;
-}
-input.quicksearch.imgbutton { 
-  margin: 4px -11px 0 0;
-  z-index: 2;
-  position: relative;
-}
 
 
 /*****************************     ODDS AND ENDS     ****************************************************/

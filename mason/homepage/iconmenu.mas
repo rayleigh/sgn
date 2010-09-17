@@ -14,10 +14,7 @@ pages.
 
 =head1 AUTHORS
 
- Camilo Rosero
- Lukas Mueller (integration into SGN, some changes to the menus)
-
- June 9, 2010
+ original graphic design by Camilo Rosero
 
 =cut
 
@@ -30,8 +27,6 @@ pages.
     #icon_nav {
         width: 720px;
         height: 480px;
-        margin-top: -20px;
-        margin-left: -20px;
     }
 
     .MapsMarkers {
