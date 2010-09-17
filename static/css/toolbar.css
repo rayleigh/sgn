@@ -27,6 +27,7 @@
   display: none;
   border: 1px solid black;
   position: absolute;
+  z-index: 99;
   background: #fafafa;
   margin: 0 0 0 -1px;
   list-style: none;
