@@ -6,17 +6,23 @@ body {
   font-family: verdana, arial, helvetica, sans-serif;
   font-size: 12px;
   line-height: 1.25;
+  padding: 0;
+  margin: 0;
 }
-#outercontainer {
-  margin: 0 auto;
-  width: 730px;
 
+#site_header, #content, #site_footer { 
+  width: 740px;
+  margin: 0 auto;
 }
 
 #site_header #title_image { 
-  margin: 0 0 4px 0;
+  margin: 6px 0 4px 0;
 }
-
+hr#head_division { 
+  border: none;
+  border-top: 1px solid #cdcdcd;
+  margin-top: 7px;
+}
 
 #xtratbl {
   background-color:#CCCCFF;
