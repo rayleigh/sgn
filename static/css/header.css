@@ -1,0 +1,72 @@
+#site_header, #content, #site_footer { 
+  width: 740px;
+  margin: 0 auto;
+}
+
+#site_header #title_image { 
+  margin: 6px 0 4px 0;
+}
+
+#site_header #login_control { 
+  float: right;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+#site_header #login_control a.login { 
+  display: block;
+  border: 1px solid #dbdbdb;
+  padding: 4px 20px 4px 20px;
+  border-top: none;
+  background: url(/img/head/login_bg.png) #ededed repeat-x top left;
+  vertical-align: middle;
+
+  color: black;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+#site_header #login_control form { 
+  background: #cccccc;
+  border: 1px solid #8e8e8e;
+  border-top: none;
+  position: absolute;
+  right: 3px;
+  padding: 10px;
+  font-size: 10px;
+}
+#site_header #login_control form td { 
+  vertical-align: middle;
+}
+#site_header #login_control tr.password input, #site_header #login_control tr.email input { 
+  background: white;
+  border: 1px solid black;
+}
+#site_header #login_control label { 
+  font-weight: bold;
+}
+#site_header #login_control div.buttons {
+  text-align: center;
+  margin-top: 5px;
+}
+#site_header #login_control div.buttons * { 
+  background: url(/img/head/login_button_bg.png) #666666 no-repeat top left;
+  border: 1px solid black;
+  border-radius: 6px;  
+  -moz-border-radius: 6px;  
+  -webkit-border-radius: 6px;  
+
+  text-align: center;
+
+  color: white;
+  font-weight: bold;
+  font-size: 10px;
+  padding: 0 10px;
+}
+
+
+hr#head_division { 
+  border: none;
+  border-top: 1px solid #cdcdcd;
+  margin-top: 7px;
+}
