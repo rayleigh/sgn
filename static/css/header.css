@@ -4,7 +4,7 @@
 }
 
 #site_header #title_image { 
-  margin: 6px 0 4px 0;
+  margin: 15px 0 0 0;
 }
 
 #site_header #login_control { 
@@ -26,7 +26,7 @@
   font-weight: bold;
 }
 
-#site_header #login_control form { 
+#site_header #login_control form.login_form { 
   background: #cccccc;
   border: 1px solid #8e8e8e;
   border-top: none;
@@ -35,21 +35,22 @@
   padding: 10px;
   font-size: 10px;
 }
-#site_header #login_control form td { 
+#site_header #login_control form.login_form td { 
   vertical-align: middle;
 }
-#site_header #login_control tr.password input, #site_header #login_control tr.email input { 
+#site_header #login_control form.login_form tr.password input,
+#site_header #login_control form.login_form tr.email    input  { 
   background: white;
   border: 1px solid black;
 }
-#site_header #login_control label { 
+#site_header #login_control form.login_form label { 
   font-weight: bold;
 }
-#site_header #login_control div.buttons {
+#site_header #login_control form.login_form div.buttons {
   text-align: center;
   margin-top: 5px;
 }
-#site_header #login_control div.buttons * { 
+#site_header #login_control form.login_form div.buttons * { 
   background: url(/img/head/login_button_bg.png) #666666 no-repeat top left;
   border: 1px solid black;
   border-radius: 6px;  
@@ -62,6 +63,42 @@
   font-weight: bold;
   font-size: 10px;
   padding: 0 10px;
+}
+
+
+
+#site_header #login_control div.logged_in { 
+  background: #ececec;
+  border: 1px solid #d7d7d7;
+  border-top: none;
+  padding-top: 5px;
+
+}
+#site_header #login_control div.logged_in div.user_name { 
+  font-weight: bold;
+  float: left;
+  margin: 0 10px 5px 10px;
+}
+#site_header #login_control div.logged_in a.logout { 
+  display: block;
+  float: right;
+  margin: 0 5px;
+  padding: 0 5px;
+  cursor: default;
+}
+
+#site_header #login_control div.logged_in div.user_controls { 
+  clear: both;
+  margin: 0;
+  padding: 2px 8px;
+
+  background: #f2f2f2;
+  border-top: 1px solid #d7d7d7;
+
+}
+#site_header #login_control div.logged_in div.user_controls a { 
+  font-weight: bold;
+  color: black;
 }
 
 

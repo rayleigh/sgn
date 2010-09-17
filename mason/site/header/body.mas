@@ -25,7 +25,9 @@
     <a href="/"><img id="title_image" src="/img/head/site_title.png" /></a>
 
     <div id="login_control">
-%#        <a class="login" href="/solpeople/login.pl">log in</a>
+% if( 0 ) {
+          <a class="login" href="/solpeople/login.pl">log in</a>
+
           <form class="login_form" action="/solpeople/login.pl" method="POST">
             <table>
               <tr class="email">
@@ -39,6 +41,17 @@
             </table>
             <div class="buttons"><input type="submit" value="log in" /> <input type="reset" value="cancel" /></div>
           </form>
+% }
+         <div class="logged_in">
+           <div class="user_name">
+             <span class="first_name"><% 'Robert' %></span>
+             <span class="last_name"><% 'Buels' %></span>
+           </div>
+           <a class="logout">log out</a>
+           <div class="user_controls">
+             <a href="/solpeople/top-level.pl">MySGN</a>
+           </div>
+         </div>
     </div>
 
     <div id="clone_shoppingcart" style="display: none">
