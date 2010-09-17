@@ -22,15 +22,19 @@
 
   <div id="site_header">
 
-    <img id="title_image" src="/img/head/site_title.png" />
-  
+    <a href="/"><img id="title_image" src="/img/head/site_title.png" /></a>
+
+    <div id="login_control">
+        <a class="login" href="/solpeople/login.pl">log in</a>
+    </div>
+
     <div id="clone_shoppingcart" style="display: none">
       <span id="clone_cart_count"></span> clone(s) in cart (<a class="toplink" style="text-decoration: underline" href="/search/clone-order.pl">order</a>)
     </div>
 
     <& /site/toolbar.mas &>
 
-  </div
+  </div>
 
   <hr id="head_division" />
 
