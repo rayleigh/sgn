@@ -51,12 +51,8 @@ else {
 if ( $logout && $logout eq "yes" )              #if we are in the process of logging out
 {
     $login_controller->logout_user();
-    $page->message_page(
-        'You have successfully logged out. Thanks for using SGN.');
 }
-
-
-if ( $username && $password )    #else if we are in the process of logging in
+elsif ( $username && $password )    #else if we are in the process of logging in
 {
     my $login_info = $login_controller->login_user( $username, $password );
 
@@ -93,33 +89,17 @@ if ( $username && $password )    #else if we are in the process of logging in
             "Our random login cookie generator generated a duplicate value!"
         );
     }
-    elsif ($person_id)           #if their username and password matched
-    {
-        if ($goto_url
-          )    #if they came from trying to work somewhere else, send them back
-        {
-
-            #if we logged in from having just logged out,
-            #make sure we don't get sent back to the logout page:
-            if ( $goto_url =~ /login\.pl/ ) {
-                $goto_url = "/solpeople/top-level.pl";
-            }
-
-            $page->client_redirect($goto_url);
-        }
-        else  #else they are just getting started, so send them to the menu page
-        {
-            $page->client_redirect("top-level.pl");
-        }
-    }
 }
-else          #else we not trying to log in yet
-{
-    if ( $login_controller->has_session()
-      ) #if there's no good reason for them to be here, send them to the menu page
-    {
-        $page->client_redirect("top-level.pl");
+
+if ( $goto_url ) {
+    #if they came from trying to work somewhere else, send them back
+    if ( $goto_url =~ /login\.pl/ ) {
+        $goto_url = "/solpeople/top-level.pl";
     }
+    $page->client_redirect($goto_url);
+}
+else {
+    $page->client_redirect("top-level.pl");
 }
 
 
