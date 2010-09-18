@@ -56,6 +56,8 @@ sub default :Path {
 
 =head2 bare_mason
 
+Public Path: /bare_mason
+
 Render a bare mason component, with no autohandler wrapping.
 Currently used for GBrowse integration (GBrowse makes a subrequest for
 the mason header and footer).
@@ -73,6 +75,32 @@ sub bare_mason :Path('bare_mason') {
     # TODO: check that it exists
 
     $c->forward('View::BareMason');
+}
+
+
+=head2 copyright
+
+Public Path: /copyright
+
+Serve a copyright notice page
+
+=cut
+
+sub copyright :Path('copyright') {
+    shift;  shift->stash->{template} = '/homepage/copyright.mas';
+}
+
+
+=head2 legal
+
+Public Path: /legal
+
+Serve a legal disclaimer page.
+
+=cut
+
+sub legal :Path('legal') {
+    shift;  shift->stash->{template} = '/homepage/legal.mas';
 }
 
 

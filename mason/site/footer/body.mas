@@ -31,8 +31,8 @@
              Send comments and feedback to <% $feedback_email %>
              <div class="footer_links">
                <a class="contact" href="/tools/contact.pl">Contact us</a>
-%#               | <a href="/copyright">Copyright</a>
-               | <a href="/legal.pl">Legal Disclaimer</a>
+               | <a href="/copyright">Copyright</a>
+               | <a href="/legal">Legal Disclaimer</a>
              </div>
           </td></tr>
       </table>
