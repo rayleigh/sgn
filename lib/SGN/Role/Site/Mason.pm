@@ -115,7 +115,7 @@ sub render_mason {
     my @args = @_;
 
     $render_mason_outbuf = '';
-    $self->_trap_mason_error( sub { $self->_bare_mason_interp->exec( $view, @args ) });
+    $self->_trap_mason_error( sub { $self->_bare_mason_interp->exec( $view, %{$self->stash}, @args ) });
 
     return $render_mason_outbuf;
 }
