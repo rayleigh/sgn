@@ -4,6 +4,9 @@ use namespace::autoclean;
 
 use CatalystX::GlobalContext ();
 
+use CXGN::Login;
+use CXGN::People::Person;
+
 BEGIN { extends 'Catalyst::Controller' }
 
 #
@@ -133,9 +136,19 @@ Run for every request to the site.
 
 sub auto : Private {
     my ($self, $c) = @_;
+
+    # set up the catalystx::globalcontext
     CatalystX::GlobalContext->set_context( $c );
     $c->stash->{c} = $c;
-    1;
+
+    # get our logged-in user, if any
+
+    my $dbh = $c->dbc->dbh;
+    if( my $person_id = CXGN::Login->new( $dbh )->has_session ) {
+        $c->stash->{logged_in_person} = CXGN::People::Person->new( $dbh, $person_id );
+    }
+
+    return 1;
 }
 
 

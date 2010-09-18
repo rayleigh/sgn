@@ -34,6 +34,7 @@
 }
 
 #site_header #login_control form.login_form { 
+  display: none;
   background: #cccccc;
   border: 1px solid #8e8e8e;
   border-top: none;
