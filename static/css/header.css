@@ -5,6 +5,8 @@
 
 #site_header #title_image { 
   margin: 15px 0 0 0;
+  display: block;
+  float: left;
 }
 
 #site_header a.help { 
@@ -73,13 +75,12 @@
   padding: 0 10px;
 }
 
-
-
 #site_header #login_control div.logged_in { 
   background: #ececec;
   border: 1px solid #d7d7d7;
   border-top: none;
   padding-top: 5px;
+  width: 20em;
 
 }
 #site_header #login_control div.logged_in div.user_name { 

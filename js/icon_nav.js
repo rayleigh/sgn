@@ -17,7 +17,7 @@ jQuery( function() {
 if( jQuery.browser.msie && jQuery.browser.version < 8 ) {
   jQuery( function() {
             var zIndexNumber = 1000;
-            jQuery('#siteheader div, #icon_nav div, #icon_nav li, #icon_nav ul')
+            jQuery('div, .toolbar ul, #icon_nav div, #icon_nav li, #icon_nav ul')
               .each( function() {
                        jQuery(this).css('zIndex', zIndexNumber);
                        zIndexNumber -= 10;
