@@ -91,7 +91,8 @@
   float: right;
   margin: 0 5px;
   padding: 0 5px;
-  cursor: default;
+
+  color: black;
 }
 
 #site_header #login_control div.logged_in div.user_controls { 
