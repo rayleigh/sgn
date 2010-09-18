@@ -89,9 +89,12 @@ a[href ^="mailto:"]  {
   background: none;
   padding-right: 2px;
 }
-#site_footer a.contact { 
-  font-weight: bold;
-  display: block;
+#site_footer div.footer_links  { 
+  margin-top: 2em;
+}
+#site_footer div.footer_links a { 
+  text-transform: lowercase;
+  padding: 5px;
 }
 
 #quicksearch_form { 
