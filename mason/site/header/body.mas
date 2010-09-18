@@ -22,12 +22,13 @@
          </div>
 % } else {
          <div class="logged_out">
-            <a href="/solpeople/login.pl">log in</a>
+            <a class="login" href="/solpeople/login.pl">log in</a>
             <a class="help" href="/help/index.pl">help</a>
          </div>
 % }
 
 %#       note: login form is initially hidden
+<& /util/import_javascript.mas, classes => 'SGN.Login' &>
           <form class="login_form" action="/solpeople/login.pl" method="POST">
             <table>
               <tr class="email">
