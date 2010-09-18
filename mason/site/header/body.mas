@@ -61,5 +61,9 @@
 <!-- END HEADER -->
 
 <%init>
-   my $person = $m->request_args->{'logged_in_person'};
+    my $person;
+    my $dbh = $c->dbc->dbh;
+    if( my $person_id = CXGN::Login->new( $dbh )->has_session ) {
+        $person = CXGN::People::Person->new( $dbh, $person_id );
+    }
 </%init>
