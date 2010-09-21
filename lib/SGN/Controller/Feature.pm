@@ -193,14 +193,14 @@ sub _make_feature_search_rs {
         $rs = $rs->search_related('featureprops',
                 {
                     'lower(value)' => { like => '%'.lc($description).'%' },
-                    'featureprops.type'  => 'Note',
+                    # 'featureprops.type_id'  => 'Note',
                 },
               );
     }
 
     if( my $type = $form->param_value('feature_type') ) {
         $self->_validate_pair($c,'type_id',$type);
-        $rs = $rs->search({ 'feature.type_id' => $type });
+        $rs = $rs->search({ 'me.type_id' => $type });
     }
 
     if( my $organism = $form->param_value('organism') ) {
