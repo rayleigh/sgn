@@ -154,6 +154,11 @@ sub _build_form {
             name: organism
             label: Organism
 
+          - type: Text
+            name: description
+            label: Description
+            size: 30
+
         # hidden form values for page and page size
           - type: Hidden
             name: page
@@ -184,10 +189,18 @@ sub _make_feature_search_rs {
     if( my $name = $form->param_value('feature_name') ) {
         $rs = $rs->search({ 'lower(name)' => { like => '%'.lc( $name ).'%' }});
     }
+    if( my $description = $form->param_value('description') ) {
+        $rs = $rs->search_related('featureprops',
+                {
+                    'lower(value)' => { like => '%'.lc($description).'%' },
+                    'featureprops.type'  => 'Note',
+                },
+              );
+    }
 
     if( my $type = $form->param_value('feature_type') ) {
         $self->_validate_pair($c,'type_id',$type);
-        $rs = $rs->search({ 'type_id' => $type });
+        $rs = $rs->search({ 'feature.type_id' => $type });
     }
 
     if( my $organism = $form->param_value('organism') ) {
