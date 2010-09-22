@@ -443,20 +443,20 @@ span.toolbar_help {
 .sub_infosectionhead_empty
 {
   width: 99%;
-  background: #ccccff;  /* this is "SGN blue" */
+  background: url(/img/section_head_bg.png) #b8b8fe repeat-x top left;
   text-align:left;
   margin-bottom: 6px;
   margin-left: 5px;
   padding: 1px 0px 3px 2px;
 /*         margin-right: 1em; */
-  border: 1px solid #9f9fc7;
+  border: 1px solid #99a;
 }
 /* sub-infosections have a gray heading */
 .sub_infosectionhead,
 .sub_infosectionhead_empty
 { 
-  background: #efefef;
-  border-color: #c2c2c2;
+  background: url(/img/section_head_sub_bg.png) #c7c7c7 repeat-x top left;
+  border-color: #aaa;
   border-width: 1px;
 }
 
