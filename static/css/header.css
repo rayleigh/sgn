@@ -34,6 +34,10 @@
   font-weight: bold;
   padding: 10px;
 }
+#site_header #login_control div.logged_out a:focus { 
+  outline: none;
+}
+
 
 #site_header #login_control form.login_form { 
   display: none;
