@@ -173,13 +173,12 @@ sub _create_test_feature {
 
 
     # provide some defaults for things we don't care about
-    $values->{residues}   ||= 'ATCG';
     $values->{seqlen}     ||= length($values->{residues});
     $values->{name}       ||= "feature_$num_features-$$";
     $values->{uniquename} ||= "unique_feature_$num_features-$$";
 
     my @values = keys %$values;
-
+    $values->{residues}   //= 'ATCG';
     $values->{organism}   ||= _create_test_organism();
     $values->{type}       ||= _create_test_cvterm();
     $values->{dbxref}     ||= _create_test_dbxref();
@@ -189,6 +188,7 @@ sub _create_test_feature {
                 type_id     => $values->{type}->cvterm_id,
                 organism_id => $values->{organism}->organism_id,
                 dbxref_id   => $values->{dbxref}->dbxref_id,
+                residues    => $values->{residues},
                 map { $_ => $values->{$_} || 0 } @values,
            });
     push @$test_data, $feature;

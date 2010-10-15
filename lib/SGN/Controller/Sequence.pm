@@ -20,6 +20,11 @@ sub api_v1_sequence :Path('/api/v1/sequence') Args(1) {
     $self->_render_sequence($c, 'name', $feature_name);
 }
 
+sub api_v1_sequence_before :Path('/api/v1/sequence/before') Args(1) {
+    my ( $self, $c, $feature_name ) = @_;
+    $self->_render_sequence($c, 'name', $feature_name);
+}
+
 sub _render_sequence {
     my ($self, $c, $key, $value) = @_;
 
@@ -48,6 +53,8 @@ sub render_fasta {
     if( $start && $end && $end > $start ){
         $name .= ":$start..$end";
     }
+    #use Data::Dumper;
+    #die Dumper [ $feature->{_column_data} ];
     my $seq = Bio::PrimarySeq->new(
                     -id  => $name,
                     -seq => $feature->residues,
