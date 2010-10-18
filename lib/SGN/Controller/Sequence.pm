@@ -53,11 +53,9 @@ sub render_fasta {
     if( $start && $end && $end > $start ){
         $name .= ":$start..$end";
     }
-    #use Data::Dumper;
-    #die Dumper [ $feature->{_column_data} ];
     my $seq = Bio::PrimarySeq->new(
                     -id  => $name,
-                    -seq => $feature->residues,
+                    -seq => $feature->residues || '',
                     );
     # ignores invalid ranges right now, should do something better
     if ($seq->length > 0 && $start && $end && $end > $start ) {
