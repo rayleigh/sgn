@@ -43,7 +43,7 @@ sub _render_sequence {
 sub render_fasta {
     my ($self, $c) = @_;
 
-    my ($start,$end) =  split /\.\./, $c->request->query_keywords;
+    my ($start,$end) =  split /\.\./, $c->request->query_keywords || '';
     my $feature = $c->stash->{feature};
     my $matching_features = $c->dbic_schema('Bio::Chado::Schema','sgn_chado')
                                 ->resultset('Sequence::Feature')
@@ -54,8 +54,9 @@ sub render_fasta {
         $name .= ":$start..$end";
     }
     my $seq = Bio::PrimarySeq->new(
-                    -id  => $name,
-                    -seq => $feature->residues || '',
+                    -id       => $name,
+                    -seq      => $feature->residues || '',
+                    -alphabet => 'dna',
                     );
     # ignores invalid ranges right now, should do something better
     if ($seq->length > 0 && $start && $end && $end > $start ) {
