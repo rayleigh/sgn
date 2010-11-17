@@ -1,11 +1,15 @@
 <html>
 <head>
-<script type="text/javascript" src="../../js/JSAN.js"></script>
+<script type="text/javascript" src="../JSAN.js"></script>
+<script type="text/javascript" src="../Test/Builder.js"></script>
+<script type="text/javascript" src="../Test/Simple.js"></script>
+<script type="text/javascript" src="../Test/Harness.js"></script>
+<script type="text/javascript" src="../Test/Harness/Browswer..js"></script>
 </head>
 <body>
 <script type="text/javascript">
-new JSAN("./lib").use("Test.Harness.Browser");
-new Test.Harness.Browser('../../js/JSAN.js').encoding('utf-8').runTests(
+new JSAN("../").use("Test.Harness.Browser");
+new Test.Harness.Browser('../JSAN.js').encoding('utf-8').runTests(
     '01_joose_works.t'
 );
 </script>
