@@ -1,4 +1,9 @@
 new JSAN('..').use('Test.More');
-plan({tests: 2});
-ok(1);
-alert(42);
+
+// There is a bug where incorrect plan numbers are not detected!
+plan({tests: 1});
+
+Class('FooBar', {});
+
+ok(FooBar, 'FooBar was created by Joose');
+
