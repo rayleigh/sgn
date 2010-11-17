@@ -1,25 +1,26 @@
 <html>
 <head>
-<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/JSAN.js"></script>
-<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/Test/Builder.js"></script>
-<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/Test/Simple.js"></script>
-<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/Test/Harness.js"></script>
-<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/Test/Harness/Browser.js"></script>
+<script type="text/javascript" src="../JSAN.js"></script>
+<script type="text/javascript" src="../Test/Builder.js"></script>
+<script type="text/javascript" src="../Test/Simple.js"></script>
+<script type="text/javascript" src="../Test/Harness.js"></script>
+<script type="text/javascript" src="../Test/Harness/Browser.js"></script>
 </head>
 <body>
 <pre id="test">
 <script type="text/javascript">
-//new JSAN("..").use("Test.Builder");
-//new JSAN("..").use("Test.Simple");
+new JSAN("..").use("Test.Builder");
+new JSAN("..").use("Test.Simple");
 new JSAN("..").use("Test.Harness.Browser");
 new Test.Harness.Browser(
-    '../JSAN.js'
+    '../JSAN.js',
+    '../Test/Builder.js',
+    '../Test/Harness.js',
+    '../Test/More.js'
 ).encoding('utf-8')
 .runTests(
-      '01_joose_works.t'
+      '01_joose.js'
 );
-//plan({tests: 1});
-//ok(1);
 </script>
 </pre>
 </body>
