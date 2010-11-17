@@ -9,14 +9,17 @@
 <body>
 <pre id="test">
 <script type="text/javascript">
-//JSAN.use("Test.Harness.Browser");
-//new JSAN("..").use("Test.Harness.Browser");
+//new JSAN("..").use("Test.Builder");
+//new JSAN("..").use("Test.Simple");
+new JSAN("..").use("Test.Harness.Browser");
 new Test.Harness.Browser(
-    'file:///home/leto/git/cxgn/sgn/js/JSAN.js'
-//    '../JSAN.js'
-).runTests(
-    '01_joose_works.t'
+    '../JSAN.js'
+).encoding('utf-8')
+.runTests(
+      '01_joose_works.t'
 );
+//plan({tests: 1});
+//ok(1);
 </script>
 </pre>
 </body>
