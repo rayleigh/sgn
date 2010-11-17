@@ -1,4 +1,6 @@
-// # $Id: Kinetic.pm 1493 2005-04-07 19:20:18Z theory $
+// $Id$
+
+/*global JSAN, Test */
 
 // Set up package.
 if (typeof JSAN != 'undefined') JSAN.use('Test.Builder');
@@ -13,7 +15,7 @@ else {
 Test.Simple = {};
 Test.Simple.EXPORT      = ['plan', 'ok'];
 Test.Simple.EXPORT_TAGS = { ':all': Test.Simple.EXPORT };
-Test.Simple.VERSION     = '0.21';
+Test.Simple.VERSION     = '0.29';
 
 Test.Simple.plan = function (cmds) {
     return Test.Simple.Test.plan(cmds);

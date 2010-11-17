@@ -1,7 +1,9 @@
-// # $Id: Kinetic.pm 1493 2005-04-07 19:20:18Z theory $
+// $Id$
+
+/*global Test, trace, output */
 
 Test.Harness.Director = function () {};
-Test.Harness.Director.VERSION = '0.21';
+Test.Harness.Director.VERSION = '0.29';
 
 Test.Harness.Director.runTests = function () {
     var harness = new Test.Harness.Director();
@@ -22,26 +24,26 @@ Test.Harness.Director.prototype.runTests = function () {
       : arguments;
     if (!functionNames.length) return;
     var outfunctions = this.outFileNames(functionNames);
-    var harness = this;
-    var start = new Date();
-    var newLineRx = /(?:\r?\n|\r)+$/;
-    var output = {
+    var harness      = this;
+    var start        = new Date();
+    var newLineRx    = /(?:\r?\n|\r)+$/;
+    var toOutput     = {
         pass: function (msg) { trace(msg.replace(newLineRx, '')) }
     }
-    output.fail = output.pass;
+    toOutput.fail = toOutput.pass;
 
     for (var x = 0; x < functionNames.length; x++){
         output(outfunctions[x]);
         eval(functionNames[x] + "()");
-        harness.outputResults(
+        harness.toOutputResults(
             Test.Builder.Test,
             functionNames[x],
-            output,
+            toOutput,
             harness.args
         );
     }
-    harness.outputSummary(
-        output,
+    harness.toOutputSummary(
+        toOutput,
         new Date() - start
     );
 };

@@ -1,18 +1,20 @@
 <html>
 <head>
-<script type="text/javascript" src="../JSAN.js"></script>
-<script type="text/javascript" src="../Test/Builder.js"></script>
-<script type="text/javascript" src="../Test/Simple.js"></script>
-<script type="text/javascript" src="../Test/Harness.js"></script>
-<script type="text/javascript" src="../Test/Harness/Browswer.js"></script>
+<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/JSAN.js"></script>
+<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/Test/Builder.js"></script>
+<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/Test/Simple.js"></script>
+<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/Test/Harness.js"></script>
+<script type="text/javascript" src="file:///home/leto/git/cxgn/sgn/js/Test/Harness/Browser.js"></script>
 </head>
 <body>
 <pre id="test">
 <script type="text/javascript">
-JSAN.use("Test.Harness.Browser");
-//new JSAN("../JSAN.js").use("Test.Harness.Browser");
-var harness = new Test.Harness.Browser('../JSAN.js');
-harness.runTests(
+//JSAN.use("Test.Harness.Browser");
+//new JSAN("..").use("Test.Harness.Browser");
+new Test.Harness.Browser(
+    'file:///home/leto/git/cxgn/sgn/js/JSAN.js'
+//    '../JSAN.js'
+).runTests(
     '01_joose_works.t'
 );
 </script>

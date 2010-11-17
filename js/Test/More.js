@@ -1,5 +1,6 @@
-// # $Id: Kinetic.pm 1493 2005-04-07 19:20:18Z theory $
-// Create a namespace for ourselves.
+// $Id$
+
+/*global JSAN, Test */
 
 // Set up package.
 if (typeof JSAN != 'undefined') JSAN.use('Test.Builder');
@@ -23,7 +24,7 @@ Test.More.EXPORT = [
     'beginAsync', 'endAsync'
 ];
 Test.More.EXPORT_TAGS = { ':all': Test.More.EXPORT };
-Test.More.VERSION     = '0.21';
+Test.More.VERSION     = '0.29';
 
 Test.More.ShowDiag = true;
 Test.Builder.DNE = { dne: 'Does not exist' };
@@ -62,8 +63,22 @@ Test.More.cmpOK = function (got, op, expect, desc) {
     return Test.More.Test.cmpOK(got, op, expect, desc);
 };
 
-Test.More.canOK = function (proto) {
-    var ok;
+Test.More.canOK = function (classProtoInstance) {
+    var ok, proto, clas, instance = {};
+    // Get the class name and the prototype.
+    var clas;
+    if (typeof classProtoInstance == 'string') {
+        // We just have a class name.
+        clas  = classProtoInstance;
+        proto = eval( clas + '.prototype' ) || {};
+        instance = eval( clas ) || {};
+    } else {
+        // We have an object or something that can be converted to an object.
+        clas     = Test.Builder.typeOf(classProtoInstance);
+        proto    = classProtoInstance.constructor.prototype;
+        instance = classProtoInstance;
+    }
+
     // Make sure they passed some method names for us to check.
     if (!arguments.length > 1) {
         ok = Test.More.Test.ok(false, clas + '.can(...)');
@@ -71,29 +86,21 @@ Test.More.canOK = function (proto) {
         return ok;
     }
 
-    // Get the class name and the prototype.
-    var clas;
-    if (typeof proto == 'string') {
-        // We just have a class name.
-        clas = proto;
-        proto = eval(clas + '.prototype');
-    } else {
-        // We have an object or something that can be converted to an object.
-        clas = Test.Builder.typeOf(proto);
-        proto = proto.constructor.prototype;
-    }
-
     var nok = [];
     for (var i = 1; i < arguments.length; i++) {
         var method = arguments[i];
-        if (typeof proto[method] != 'function') nok.push(method);
+        if (   typeof proto[method]    != 'function' 
+            && typeof instance[method] != 'function' )
+        {
+            nok.push(method);
+        }
     }
 
-    // There'es no can() method in JavaScript, but what the hell!
+    // There's no can() method in JavaScript, but what the hell!
     var desc = clas + ".can('" + (arguments.length == 2 ? arguments[1] : '...') + "')";
     ok = Test.More.Test.ok(!nok.length, desc);
-    for (var i = 0; i < nok.length; i++) {
-        Test.More.Test.diag('    ' + clas + ".can('" + nok[i] + "') failed");
+    for (var j = 0; j < nok.length; j++) {
+        Test.More.Test.diag('    ' + clas + ".can('" + nok[j] + "') failed");
     }
     return ok;
 };
@@ -108,19 +115,9 @@ Test.More.isaOK = function (object, clas, objName) {
         mesg = objName + " isn't a reference";
     } else {
         var ctor = eval(clas);
-        if (Object.isPrototypeOf) {
-            // With JavaScript 1.5, we can determine inheritance.
-            if (!ctor.prototype.isPrototypeOf(object)) {
-                mesg = objName + " isn't a '" + clas + "' it's a '"
-                  + Test.Builder.typeOf(object) + "'";
-            }
-        } else {
-            // We can just determine what constructor was used. This will
-            // not work for inherited constructors.
-            if (object.constructor != ctor)
-                mesg = objName + " isn't a '" + clas + "' it's a '"
-                  + Test.Builder.typeOf(object) + '"';
-        }
+        if (!object instanceof ctor)
+            mesg = objName + " isn't a '" + clas + "' it's a '"
+              + Test.Builder.typeOf(object) + '"';
     }
     
     var ok;
@@ -233,7 +230,7 @@ Test.More._deepCheck = function (e1, e2, stack, seen) {
         // Handles primitives and any variables that reference the same
         // object, including functions.
         ok = true;
-    } else if (isa(e1, 'Array') && isa(e2, 'Array')) {
+    } else if (Test.More.isa(e1, 'Array') && Test.More.isa(e2, 'Array')) {
         ok = Test.More._eqArray(e1, e2, stack, seen);
     } else if (typeof e1 == "object" && typeof e2 == "object") {
         ok = Test.More._eqAssoc(e1, e2, stack, seen);
@@ -276,12 +273,12 @@ Test.More._formatStack = function (stack) {
     ];
 
     var out = "Structures begin differing at:" + Test.Builder.LF;
-    for (var i = 0; i < vals.length; i++) {
-        var val = vals[i];
+    for (var j = 0; j < vals.length; j++) {
+        var val = vals[j];
         if (val == null) {
             val = 'undefined';
         } else {
-             val == Test.More.DNE ? "Does not exist" : "'" + val + "'";
+             val = Test.More.DNE ? "Does not exist" : "'" + val + "'";
         }
     }
 
@@ -392,12 +389,12 @@ Test.More._eqAssoc = function (o1, o2, stack, seen) {
     var ok = true;
     // Only examines enumerable attributes.
     var o1Size = 0; for (var i in o1) o1Size++;
-    var o2Size = 0; for (var i in o2) o2Size++;
+    var o2Size = 0; for (var j in o2) o2Size++;
     var bigger = o1Size > o2Size ? o1 : o2;
-    for (var i in bigger) {
-        var e1 = o1[i] == undefined ? Test.More.DNE : o1[i];
-        var e2 = o2[i] == undefined ? Test.More.DNE : o2[i];
-        stack.push({ type: 'Object', idx: i, vals: [e1, e2] });
+    for (var k in bigger) {
+        var e1 = o1[k] == undefined ? Test.More.DNE : o1[k];
+        var e2 = o2[k] == undefined ? Test.More.DNE : o2[k];
+        stack.push({ type: 'Object', idx: k, vals: [e1, e2] });
         if (ok = Test.More._deepCheck(e1, e2, stack, seen)) {
             stack.pop();
         } else {
