@@ -4,15 +4,19 @@
 <script type="text/javascript" src="../Test/Builder.js"></script>
 <script type="text/javascript" src="../Test/Simple.js"></script>
 <script type="text/javascript" src="../Test/Harness.js"></script>
-<script type="text/javascript" src="../Test/Harness/Browswer..js"></script>
+<script type="text/javascript" src="../Test/Harness/Browswer.js"></script>
 </head>
 <body>
+<pre id="test">
 <script type="text/javascript">
-new JSAN("../").use("Test.Harness.Browser");
-new Test.Harness.Browser('../JSAN.js').encoding('utf-8').runTests(
+JSAN.use("Test.Harness.Browser");
+//new JSAN("../JSAN.js").use("Test.Harness.Browser");
+var harness = new Test.Harness.Browser('../JSAN.js');
+harness.runTests(
     '01_joose_works.t'
 );
 </script>
+</pre>
 </body>
 </html>
 
