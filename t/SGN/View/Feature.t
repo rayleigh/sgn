@@ -6,12 +6,13 @@ use base 'Test::Class';
 use Test::Class;
 use lib 't/lib';
 use SGN::Test::Data qw/create_test/;
-use Test::More tests => 8;
+use Test::More 'no_plan';
 
 use_ok('SGN::View::Feature', qw/
     feature_table related_stats
     mrna_and_protein_sequence
     cvterm_link
+    organism_link
 / );
 
 sub make_fixture : Test(setup) {
@@ -22,6 +23,18 @@ sub make_fixture : Test(setup) {
 sub teardown : Test(teardown) {
     my $self = shift;
     # SGN::Test::Data objects self-destruct, don't clean them up here!
+}
+
+sub TEST_ORGANISM_LINK : Tests {
+    my $self = shift;
+    my $organism = create_test('Organism::Organism');
+    my $link     = organism_link($organism);
+    my $id       = $organism->organism_id;
+    my $species  = $organism->species;
+    like($link, qr/class="species_binomial"/, "organism link has correct class");
+    like($link, qr/organism_id=$id/, "organism link has correct id");
+
+    like($link, qr/$species/, "organism link has correct species");
 }
 
 sub TEST_RELATED_STATS : Tests {
