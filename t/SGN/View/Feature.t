@@ -13,6 +13,7 @@ use_ok('SGN::View::Feature', qw/
     mrna_and_protein_sequence
     cvterm_link
     organism_link
+    feature_link
 / );
 
 sub make_fixture : Test(setup) {
@@ -23,6 +24,14 @@ sub make_fixture : Test(setup) {
 sub teardown : Test(teardown) {
     my $self = shift;
     # SGN::Test::Data objects self-destruct, don't clean them up here!
+}
+
+sub TEST_FEATURE_LINK : Tests {
+    my $self = shift;
+    my $feature = create_test('Sequence::Feature');
+    my $link    = feature_link($feature);
+    my $name    = $feature->name;
+    like($link, qr!/feature/view/name/$name!, "feature link has correct name");
 }
 
 sub TEST_ORGANISM_LINK : Tests {
