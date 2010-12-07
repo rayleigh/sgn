@@ -16,7 +16,6 @@ use Modern::Perl;
 use Test::More;
 use lib 't/lib';
 use SGN::Test;
-use SGN::Test::WWW::Mechanize;
 use SGN::Test::WWW::Selenium;
 use CXGN::DB::Connection;
 use CXGN::People::Person;
