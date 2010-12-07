@@ -9,7 +9,7 @@ sub new {
         host        => ( $ENV{SELENIUM_HOST}      || 'winsel.sgn.cornell.edu' ),
         port        => ( $ENV{SELENIUM_HOST_PORT} || 4444 ),
         browser     => ( $ENV{SELENIUM_BROWSER}   || '*iexplore' ),
-        browser_url => ( $ENV{SGN_TEST_SERVER} || 'http://localhost' ),
+        browser_url => ( $ENV{SGN_TEST_SERVER} || 'http://sgn-build-64.sgn.cornell.edu' ),
         %opts,
     );
 }
