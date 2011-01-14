@@ -19,7 +19,8 @@ sub _build_stats_obj
 
 #Calculates color representation of each tissue according to its 
 #signal strength
-#User can specify a $threshold,
+#User can specify a $threshold, whether to mask and the ratio at which to do so
+#Returns a hash ref with tissues as keys and an array ref holding colors
 sub calculate_absolute
 {
    my ($self, $threshold, $override, $grey_mask_on, $mask_ratio) = @_;   
@@ -38,6 +39,7 @@ sub calculate_absolute
       {
           #255.5 is used for rounding purposes
           my $intensity = floor(255.5 - $signal * 255.0/$max);
+          $intensity ($intensity >= 0) ? $intensity:0;
           $tissue_to_RGB_val{$tissue}=[255, $intensity, 0];
       }
    }
@@ -46,6 +48,8 @@ sub calculate_absolute
 
 #Calculates color representation of each tissue according to the log base 2
 #ratio of signal divided by control
+#User can specify a $threshold, whether to mask and the ratio at which to do so
+#Returns a hash ref with tissues as keys and an array ref holding colors
 sub calculateRelative
 {
    my ($self, $threshold, $override, $grey_mask_on, $mask_ratio) = @_;   
@@ -82,6 +86,8 @@ sub calculateRelative
 
 #Calculates colors by comparing the log base 2 ratio of a gene's signal to
 #its control to another gene's log base 2 ratio
+#User can specify a $threshold, whether to mask and the ratio at which to do so
+#Returns a hash ref with tissues as keys and an array ref holding colors
 sub calculateComparison
 {
    my ($class, $gene1Expression, $gene2Expression, 
