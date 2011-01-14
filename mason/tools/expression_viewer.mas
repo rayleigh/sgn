@@ -1,0 +1,68 @@
+<& "../page/page_title.mas", title => "eFP Viewer" &>
+
+<div style="margin-left: 30px">
+<table summary="" border="0" cellpadding="5" cellspacing="5">
+<tr>
+% @titles=['Image Source', 'Data Source', 'Mode', 'Gene One Id', 'Gene Two Id'];
+% for my $title (@$titles) {
+<th><% $title %></th>  
+%}
+<th>Signal Threshold<input type = "checkbox" name = "threshold_on" />
+</tr>
+<tr>
+<form method="POST" action= "/ " name = "eFP_requests">
+<%perl>
+@drop_boxes = ['image_selected', 'data_source', 'mode'];
+%drop_box_options = {'image_selected' => keys %image_name_to_image_source,
+			'data_source' => @data_sources,
+			   'mode' => @modes};
+%drop_box_option_selected = {'image_selected' => $cur_image_name,
+			        'data_source' => $cur_data_source,
+				   'mode' => $cur_mode};
+</%perl>
+%foreach my $drop_box_type (@$drop_boxes) {
+<td><select name = "<% $drop_box_type %>" 
+	selected = "<% $$drop_box_option_selected{$drop_box_type} %>" >
+% foreach my $option ($$drop_box_options{$drop_box_type}) {
+   <option><% $option %></option>
+% } }
+<td>
+<input type = "text" name = "gene_one" value = "<% $gene_one %>" />
+</td>
+<td>
+<input type = "text" name = "gene_two" value = "<% $gene_two %>"
+% unless ($ARGS{mode} eq 'comparison') {
+disabled
+%}
+/>
+</td>
+<td><input type = "text" name = "threshold_value" 
+				value = "<% $signalThreshold %>" 
+% if ($ARGS{threshold_on}) {
+disabled
+% }
+/>
+</td>
+<td><input type = "submit" value = "Fetch Image"></td>
+</form>
+</tr>
+<tr>
+<td colspan = '7'>
+<img source = <% $image_name_to_image_source{$cur_image_name} %> 
+	alt = "<% $cur_image_name %>" />
+</td>
+</tr>
+</table>
+</div>
+
+<%args>
+%image_name_to_image_source = ('' => '')
+@data_sources = ('')
+@modes = ('')
+$gene_one => ''
+$gene_two => ''
+$signalThreshold => 0
+$cur_image_name = '';
+$cur_data_souce = '';
+$cur_mode = '';
+</%args> 
