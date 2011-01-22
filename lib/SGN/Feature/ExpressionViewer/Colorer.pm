@@ -62,16 +62,25 @@ sub drawAbsoluteLegend
 {
    my ($self, $min, $min_colors, 
 		$max, $max_colors, $maxGreaterThanThreshold) = @_;
-
+    my $legend = new GD::Image(140, 50);
+   #Sets the background of legend to white
+   $legend->allocate(255,255,255);
+   self->_draw_text($legend, 10, 10, 'gdMediumBoldFont', 'Absolute');
    #Assumes for absolute data we changed the green intensity of RGB
-   my $inc = ($$max_colors[1] - $$min_colors[1])/10;
-   my @colors;
+   my $colorInc = ($$max_colors[1] - $$min_colors[1])/9;
+   my $numInc = ($max - $min)/9;
    for my $i (0..9)
    {
-	$colors[$i] = [255, floor($$max_colors[1] - $i * $inc + .5), 0];
+      my @coordinates = (20 + $i * 10, 10, 30 + $i * 10, 25);
+      $self->_draw_rectangle($legend, @coordinates,  
+					255, floor($$max_colors[1] - $i * $inc + .5), 0); 
+      my $colorRepValue = sprintf("%.2f", $max - $i * $numInc);
+      $colorRepValue .= "+" if $maxGreaterThanThreshold and $i == 0;
+      #Puts the text in the vertical middle of the block and 3 away horizontally to the right
+      $self->_draw_text($legend, ($coordinates[0] + $coordinates[2])/2, $coordinates[3] + 3,
+                                             		       'gdSmallFont', $colorRepValue); 
    }
-   $self->_draw_legend($min, $max, \@colors, 
-				'Absolute', $maxGreaterThanThreshold);
+   $self->_combine_image_and_legend($legend);
 }
 
 #Draws the legend for a relative expression picture
@@ -79,43 +88,65 @@ sub drawRelativeLegend
 {
    my ($self, $min, $min_colors,
                 $max, $max_colors, $maxGreaterThanThreshold) = @_;
+   my $legend = new GD::Image(140, 50);
+   #Sets the background of legend to white
+   $legend->allocate(255,255,255);
+   self->_draw_text($legend, 10, 10, 'gdMediumBoldFont', 'Ratio log2');
    #Assumes those above median have green modified and those below have
    #yellow modified from zero
-   my $inc = ($$max_colors[1] + $$min_colors[2])/10;
-   my @colors;
+   my $colorInc = (255 - $$max_colors[1] + 255 - $$min_colors[2])/9;
+   my $numInc = ($max - $min)/9;
    for my $i (0..9)
    {
-      my $greenChange = floor($$max_colors[1] + $i * $inc + .5);
+      my $greenChange = floor($$max_colors[1] + $i * $colorInc + .5);
+      my @coordinates = (20 + $i * 10, 10, 30 + $i * 10, 25);
       if ($greenChange < 255)
       {
-         $colors[$i] = [255, $greenChange, 0];
+         $self->_draw_rectangle($legend, @coordinates, 255, $greenChange, 0); 
       }
       else
       {
          my $colorShift = $greenChange % 255;
-         $colors[$i] = [255 - $colorShift, 255 - $colorShift, $colorShift]; 
+         $self->_draw_rectangle($legend, @coordinates, 
+				    255 - $colorShift, 255 - $colorShift, $colorShift); 
       }
+      my $colorRepValue = sprintf("%.2f", $max - $i * $numInc);
+      $colorRepValue .= "+" if $maxGreaterThanThreshold and $i == 0;
+      $self->_draw_text($legend, ($coordinates[0] + $coordinates[2])/2, $coordinates[3] + 3,
+                                             		       'gdSmallFont', $colorRepValue); 
    }
-   $self->_draw_legend($min, $max, \@colors,
-                                'Ratio log2', $maxGreaterThanThreshold);   
+   $self->_combine_image_and_legend($legend);
 }
 
-#Given the min, max, title, and a reference to an array with the ten colors' RGB
-#in the legend, draws the legend.
-sub _draw_legend
+#Draws a rectangle at the position given in given image
+sub _draw_rectangle
 {
-   my ($self, $min, $max, $colors_list_ref, $title, 
-				$maxGreaterThanThreshold) = @_;
-   my $increment = ($min - $max)/10.0;
-   for my $i (0..9)
-   {
-      my $color = $self->image->colorResolve(@$colors_list_ref[$i]);
-      $self->image->filledRectangle(10*($i + 1), 10, 15*($i + 1), 20, $color);
-      my $black = $self->image->colorResolve(0,0,0); 
-      my $colorRepValue = sprintf("%.2f", $max - $i * $increment);
-      $colorRepValue .= "+" if $maxGreaterThanThreshold and $i == 0;  
-      $self->image->string('gdSmallFont', 10*($i+1) + 2, 21, $colorRepValue, $black);
-   }   
+   my ($self, $image, $start_x, $start_y, $end_x, $end_y,
+			 $redValue, $blueValue, $greenValue) = @_;
+   my $color = $image->colorAllocate($redValue, $blueValue, $greenValue);
+   $image->filledRectangle($start_x, $start_y, $end_x, $end_y, 
+}
+
+#Draws text at position given in given image
+sub _draw_text
+{
+   my ($self, $image, $start_x, $start_y, $font, $text) = @_;
+   my $textColor = $image->colorAllocate(0,0,0);
+   $image->string($font, $start_x, $start_y, $text, $textColor); 
+}
+
+sub _combine_image_and_legend
+{
+   my ($self, $legend) =  @_;
+   $self->image = $self->_build_image();
+   my $new_image = new GD::Image($legend->width + $self->image->width, 
+				    $legend->height + $self->image->height);
+   #Copies the legend onto the upper right hand corner of the new image
+   $new_image->copy($legend,0,0,0,0,$legend->width, $legend->height);
+   #Copies the original image onto the new image next to the legend
+   $new_image->copy($self->image,$legend->width,0,0,0,
+				$self->image->width, $self->image->height);
+   $self->image = $new_image;
 }
 
 __PACKAGE__->meta->make_immutable;

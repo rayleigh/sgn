@@ -13,8 +13,7 @@ has control_signal_for_tissue => {isa => 'Hash', is => 'rw', required => 0};
 #Creates the stats object
 sub _build_stats_obj
 {
-   my $self = shift;
-   $self->stats_obj = Statistics::Descriptive::Full->new();
+   return Statistics::Descriptive::Full->new();
 }
 
 #Calculates color representation of each tissue according to its 
