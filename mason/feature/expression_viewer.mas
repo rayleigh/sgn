@@ -48,8 +48,13 @@ disabled
 </tr>
 <tr>
 <td colspan = '7'>
-<img source = <% $image_name_to_image_source{$cur_image_name} %> 
-	alt = "<% $cur_image_name %>" />
+<img source = "<% $image_name_to_image_source{$cur_image_name} %>" 
+	alt = "<% $cur_image_name %>" usemap = "#picture_links" />
+<map name="picture_links">
+%for my $coord (keys %coord_of_img_links) { 
+   <area shape = "polygon" coords = "<% $coord %>" 
+		    href = "<% $coor_of_img_links{$coord} %>" />
+%}
 </td>
 </tr>
 </table>
@@ -65,4 +70,5 @@ $signalThreshold => 0
 $cur_image_name = '';
 $cur_data_souce = '';
 $cur_mode = '';
+%coord_of_img_links = '';
 </%args> 

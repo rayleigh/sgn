@@ -11,6 +11,11 @@ sub _build_image
    GD::Image->new(shift->image_source);
 }
 
+sub reset_image
+{
+   self->_build_image;
+}
+
 #Converts an index of the given current RGB values to a new index
 #of the given new RGB values
 #Takes no action if index is not found or RGB values specify black or white. 
@@ -58,11 +63,10 @@ sub writeImageAsPNGFile
 }
 
 #Draws the legend for an absolute expression picture
-sub drawAbsoluteLegend
+sub draw_absolute_legend
 {
-   my ($self, $min, $min_colors, 
-		$max, $max_colors, $maxGreaterThanThreshold) = @_;
-    my $legend = new GD::Image(140, 50);
+   my ($self, $min, $max, $min_colors, $max_color, $threshold) = @_;
+   my $legend = new GD::Image(140, 50);
    #Sets the background of legend to white
    $legend->allocate(255,255,255);
    self->_draw_text($legend, 10, 10, 'gdMediumBoldFont', 'Absolute');
@@ -73,21 +77,21 @@ sub drawAbsoluteLegend
    {
       my @coordinates = (20 + $i * 10, 10, 30 + $i * 10, 25);
       $self->_draw_rectangle($legend, @coordinates,  
-					255, floor($$max_colors[1] - $i * $inc + .5), 0); 
+			255, floor($$max_colors[1] - $i * $inc + .5), 0); 
       my $colorRepValue = sprintf("%.2f", $max - $i * $numInc);
-      $colorRepValue .= "+" if $maxGreaterThanThreshold and $i == 0;
-      #Puts the text in the vertical middle of the block and 3 away horizontally to the right
-      $self->_draw_text($legend, ($coordinates[0] + $coordinates[2])/2, $coordinates[3] + 3,
-                                             		       'gdSmallFont', $colorRepValue); 
+      $colorRepValue .= "+" if $max > $threshold and $i == 0;
+      #Puts the text in the vertical middle of the block 
+      #and 3 away horizontally to the right
+      $self->_draw_text($legend, ($coordinates[0] + $coordinates[2])/2, 
+		         $coordinates[3] + 3,'gdSmallFont', $colorRepValue); 
    }
    $self->_combine_image_and_legend($legend);
 }
 
 #Draws the legend for a relative expression picture
-sub drawRelativeLegend
+sub draw_relative_legend
 {
-   my ($self, $min, $min_colors,
-                $max, $max_colors, $maxGreaterThanThreshold) = @_;
+   my ($self, $min, $max, $min_colors, $max_colors, $threshold) = @_;
    my $legend = new GD::Image(140, 50);
    #Sets the background of legend to white
    $legend->allocate(255,255,255);
@@ -111,9 +115,8 @@ sub drawRelativeLegend
 				    255 - $colorShift, 255 - $colorShift, $colorShift); 
       }
       my $colorRepValue = sprintf("%.2f", $max - $i * $numInc);
-      $colorRepValue .= "+" if $maxGreaterThanThreshold and $i == 0;
-      $self->_draw_text($legend, ($coordinates[0] + $coordinates[2])/2, $coordinates[3] + 3,
-                                             		       'gdSmallFont', $colorRepValue); 
+      $colorRepValue .= "+" if ($max > $threshold and $i == 0);
+      $self->_draw_text($legend, ($coordinates[0] + $coordinates[2])/2, $coordinates[3] + 3, 'gdSmallFont', $colorRepValue); 
    }
    $self->_combine_image_and_legend($legend);
 }
@@ -138,7 +141,6 @@ sub _draw_text
 sub _combine_image_and_legend
 {
    my ($self, $legend) =  @_;
-   $self->image = $self->_build_image();
    my $new_image = new GD::Image($legend->width + $self->image->width, 
 				    $legend->height + $self->image->height);
    #Copies the legend onto the upper right hand corner of the new image
