@@ -47,7 +47,21 @@ disabled
 </form>
 </tr>
 <tr>
-<td colspan = '7'>
+<td>
+<table cellpadding = 5>
+%for my $label (reverse sort keys %$legend_ref) {
+<tr>
+<td>
+<div style="width:10px;height:10px;border:1px solid #000;background:rgb(<% $$legend_ref{$label} %>)"></div>
+</td>
+<td>
+<% $label %>
+</td>
+</tr>
+%}
+</table>
+</td>
+<td colspan = '6', rowspan = '6'>
 <img source = "<% $image_name_to_image_source{$cur_image_name} %>" 
 	alt = "<% $cur_image_name %>" usemap = "#picture_links" />
 <map name="picture_links">
