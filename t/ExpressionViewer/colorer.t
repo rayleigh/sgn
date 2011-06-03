@@ -4,9 +4,11 @@ use strict;
 use warnings;
 use Test::More qw | no_plan |;
 use lib 't/lib';
-use SGN::Feature::ExpressionViewer::Colorer;
-use GD::Image;
-use File::Temp qw/ :seekable /;
+BEGIN {
+   use_ok('SGN::Feature::ExpressionViewer::Colorer');
+   use_ok('GD::Image');
+   use_ok('File::Temp', qw/ :seekable /);
+}
 
 $File::Temp::KEEP_ALL = 1;
 
@@ -32,7 +34,11 @@ close $fh;
 
 #Tests the Colorer with the file of the three rectangles created before
 my $highlighter = SGN::Feature::ExpressionViewer::Colorer->new('image_source' => $testoutfile);
-can_ok($highlighter, qw(changeColorIndex writeImageAsPNGFile));
+diag('Tests if Colorer was created');
+isa_ok($highlighter, 'SGN::Feature::ExpressionViewer::Colorer');
+diag('Tests if Colorer can do its methods');
+can_ok($highlighter, qw(changeColorIndex writeImageAsPNGFile reset_image)); 
+#draw_absolute_legend draw_relative_legend _draw_rectangle _draw_text _combine_image_and_legend));
 
 diag("Trying to change white and black");
 $highlighter->changeColorIndex(0,0,0,@test_color);
