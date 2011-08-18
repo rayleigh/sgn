@@ -6,13 +6,15 @@ use POSIX;
 has 'gene_signal_in_tissue' => (isa => 'HashRef[Num]', is => 'rw', 
 			         required => 1, traits => ['Hash'], 
 				   handles => {tissues => 'keys',
-					         exp_levels => 'values'});
+					       exp_levels => 'values'});
 has 'stats_obj' => (isa => 'Statistics::Descriptive::Full', is => 'rw', 
 		       lazy_build => 1, handles => {get_min => 'min',
-						    get_median => 'median'});
+						    get_median => 'median',
+						    get_mean => 'mean',
+						    get_max => 'max'});
 has 'control_signal_for_tissue' => (isa => 'HashRef[Num]', is => 'rw', 
 				     required => 0, traits => ['Hash'],
-				      handles => {control_levels => 'values',});
+				      handles => {control_levels => 'values'});
 
 #Creates the stats object
 sub _build_stats_obj
@@ -65,10 +67,10 @@ sub calculate_relative
    my ($self, $threshold, $override, $grey_mask_on, $mask_ratio) = @_;   
    my %tissue_to_ratio = $self->_get_ratio_between_control_and_mean();  
    $self->_load_data_into_stats_obj(values %tissue_to_ratio);
-   my $median = $self->stats_obj->median();
+   my $median = $self->get_median;
    my $max = $self->_determine_max($threshold, $override);
    my $max_dif = $max - $median;
-   my $abs_val_min_dif = abs($self->stats_obj->min - $median);
+   my $abs_val_min_dif = abs($self->get_min - $median);
    #Sets $max to absolute value of min if it is greater than max
    $max_dif = ($max_dif > $abs_val_min_dif) ? $max_dif:$abs_val_min_dif;
    my ($max_color_index, $min_color_index) = (0,0);
@@ -77,6 +79,8 @@ sub calculate_relative
    foreach my $tissue (keys %tissue_to_ratio)
    {
       my $signal = $tissue_to_ratio{$tissue};
+      #print "$signal";
+
       #Sets $intensity to 255 if $signal > $threshold
       my $intensity = ($signal <= $max) ?  
 		floor(($signal - $median)*255.0/$max_dif + .5):255;
@@ -85,11 +89,12 @@ sub calculate_relative
       {
           $tissue_to_RGB_val{$tissue} = [221,221,221];
       }
-      elsif ($signal > $median || $signal > $max)
+      elsif ($signal >= $median || $signal >= $max)
       {
-          $max_color_index = $intensity unless $max_color_index > $intensity 
-	      and ($max == $threshold and $intensity == 255);
+          $max_color_index = $intensity if $max_color_index < $intensity 
+	      						   and $max > $median;
           $tissue_to_RGB_val{$tissue} = [255, 255 - $intensity, 0];
+          #print " here\t" . $intensity . "\n";
       }
       else
       {
@@ -98,12 +103,13 @@ sub calculate_relative
 		($max_color_index == 0 || $max_color_index < $intensity);
           $tissue_to_RGB_val{$tissue} = 
 			[255 + $intensity, 255 + $intensity, - $intensity];
+          #print " there\t" . $intensity . "\n";
       }
    }
    my $max_color = [];
    if ($max_color_index >= 0)
    {
-      $max_color = [255, 255 -$max_color_index, 0];
+      $max_color = [255, 255 - $max_color_index, 0];
    }
    else
    {
@@ -121,29 +127,32 @@ sub calculate_relative
 #Returns a hash ref with tissues as keys and an array ref holding colors
 sub calculate_comparison
 {
-   my ($class, $gene1Expression, $gene2Expression, 
-		  $threshold, $override, $grey_mask_on, $mask_ratio) = @_;
+   my ($self, $comparison_converter, $threshold, 
+		$override, $grey_mask_on, $mask_ratio) = @_;
    my %dif_in_gene_sig;
    my %dif_in_control_sig;
-   for my $tissue ($class->tissues)
+   for my $tissue ($self->tissues)
    {
-      my $gene1Sig = $gene1Expression->gene_signal_in_tissue->{$tissue};
-      my $gene1Control = $gene1Expression->control_signal_for_tissue->{$tissue};
-      my $gene2Sig = $gene2Expression->gene_signal_in_tissue->{$tissue};
-      my $gene2Control = $gene2Expression->control_signal_for_tissue->{$tissue};
-      #If both gene2 signal and its control are defined and not 0,
+      my $gene1Sig = $self->gene_signal_in_tissue->{$tissue};
+      my $gene1Control = $self->control_signal_for_tissue->{$tissue};
+      my $gene2Sig = $comparison_converter->gene_signal_in_tissue->{$tissue};
+      my $gene2Control = $comparison_converter->control_signal_for_tissue->{$tissue};
+
+      #If all are defined and not 0,
       if ($gene2Sig and $gene2Control and $gene1Sig and $gene1Control)
       {
          $dif_in_gene_sig{$tissue} = $gene1Sig/$gene2Sig;
          $dif_in_control_sig{$tissue} = $gene1Control/$gene2Control;
+         #print 
+	#"$tissue\t$dif_in_gene_sig{$tissue}\t$dif_in_control_sig{$tissue}\n";
       }
    }
-   my $dif_gene_analysis = 
+   my $temp_gene_analysis = 
 	SGN::Feature::ExpressionViewer::Converter->new(
-	   'gene_signal_in_tissue'=>"%dif_in_gene_sig",
-	       'control_signal_for_tissue'=>"%dif_in_control_sig"); 
-   return ($dif_gene_analysis->calculate_relative($threshold, $grey_mask_on, 
-							$override, $mask_ratio),	      $dif_gene_analysis->get_min_and_max());
+	   'gene_signal_in_tissue'=> \%dif_in_gene_sig,
+	       'control_signal_for_tissue'=> \%dif_in_control_sig); 
+   return ($temp_gene_analysis->calculate_relative($threshold, $grey_mask_on, 
+							$override, $mask_ratio),	      $temp_gene_analysis->get_min, $temp_gene_analysis->get_median);
 }
 
 sub get_min_and_max

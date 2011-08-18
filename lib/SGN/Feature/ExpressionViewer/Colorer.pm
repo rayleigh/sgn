@@ -9,7 +9,7 @@ subtype 'Image',
    => message{"True color image! Need palette or indexed color!"};
 
 has 'image_source' => (isa => "Str", is => "ro", required => 1,);
-has 'image' => (isa => "GD::Image", is => "ro", lazy_build => 1,);
+has 'image' => (isa => "Image", is => "rw", lazy_build => 1,);
 
 sub _build_image
 {
@@ -18,7 +18,8 @@ sub _build_image
 
 sub reset_image
 {
-   self->_build_image;
+   my $self = shift;
+   $self->image($self->_build_image);
 }
 
 #Converts an index of the given current RGB values to a new index

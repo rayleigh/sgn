@@ -12,35 +12,34 @@ use SGN::ExpressionViewer::Analyzer;
 use SGN::ExpressionViewer::Loader;
 use constant config_file_name => 'config_file.txt';
 
-has 'img_name_to_src' => {
+has 'img_name_to_src' => (
     is => 'ro',
     isa => 'HashRef',
-};
+);
 
 has 'img_name_to_gene_config' =>
-{
+(
     is => 'ro',
     isa => 'HashRef',
     builder => '_parse_config_file'
-};
+);
 
-has 'loader' => {
+has 'loader' => (
     is => 'ro',
     isa => 'SGN::Feature::ExpressionViewer::Loader',
-   
-};
+);
 
-has 'analyzer' => {
+has 'analyzer' => (
     is => "ro",
     isa => 'SGN::Feature::ExpressionViewer::Converter',
-    lazy_build = 
-};
+    lazy_build = 1
+);
 
-has 'img_src_list' => {
+has 'img_src_list' => (
     is => "ro",
     isa => 'Hash',
-    lazy_build = 1;
-};
+    lazy_build = 1
+);
 
 #Assumes config_file has this format:
 #img_name\timg_source\tgene_config_file_name\n
@@ -76,9 +75,8 @@ sub submit :Path('expression_viewer/submit')
    my $gene_one = $c->req->param{'gene_one'};
    my $gene_two = $c->req->param{'gene_two'} if $mode eq 'compare';
    my $schema = ?;
-   $self->_update_loader($schema, 
-	$self->img_name_to_gene_config{$gene_config_file}, $data_source); 
-   
+   $self->_update_loader_and_analyzer($schema, 
+	$self->img_name_to_gene_config{$gene_config_file}, $data_source);  
    'image_selected', 'data_source', 'mode'
    
 }
