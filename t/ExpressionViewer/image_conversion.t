@@ -20,6 +20,17 @@ $File::Temp::KEEP_ALL = 1;
 
 my %important_info = ();
 
+#Gets info about location of colors
+my %colors_to_pixel;
+open GUIDE, "<", "test_img_color_guide.txt";
+while (<GUIDE>)
+{
+   chomp;
+   my @info = split(/\t/, $_); 
+   $colors_to_pixel{$info[0]} = [$info[1]];
+}
+close GUIDE;
+
 #Generates random data
 
 #Creates a list of random PO_terms and stores it in a file
@@ -32,6 +43,7 @@ for my $i (0..20)
     push @PO_terms, "PO0000" . sprintf("%04d", int(rand(10000)));
 }
 print $PO_term_fHandle @PO_terms;
+print $PO_term_fHandle "\n";
 
 #Creates data for the PO terms so that the first PO_term has
 #exp value of the number of PO terms and the control is 1
@@ -47,10 +59,12 @@ for my $term (@unique_PO_terms)
    my $exp_value = $i;
    my $control_value = $j;
    $data{$term} = "$exp_value,$control_value";
-   print $PO_term_fHandle "$term\t$exp_value\t$control_value\n";
    $i--;
    $j++;
+   print $PO_term_fHandle "$term\t$data{$term}\n";
 }
+
+my %PO_term_to_pixel;
 
 #Assigns color to a certain number of PO_terms
 my @unused_data_PO_terms = ();
@@ -61,15 +75,20 @@ for my $i (0..scalar @unique_PO_terms - 1)
    if ($i < $rand_size || $i == $rand_index)
    {
       my $color = "0,0," . (255 - $i * 10);
-      $PO_term_to_color{$term} = "$color";
-      print $PO_term_fHandle "$term\t$color\n";
+      $PO_term_to_color{$term} = $color;
+      diag($color);
+      $PO_term_to_pixel{$term} = $colors_to_pixel{$color};
+      print $PO_term_fHandle "$term\t$PO_term_to_color{$term}\t$PO_term_to_pixel{$term}\n";
    }
    else
    {
       push @unused_data_PO_terms, $term;
       delete $PO_term_to_color{$term};
+      print $PO_term_fHandle "$term is unused\n";
    }
 }
+
+print $PO_term_fHandle "\nSupplemental terms:\n";
 
 #Creates supplemental PO terms so all colors are taken
 my @supplemental_PO_terms = ();
@@ -81,7 +100,8 @@ while (scalar keys %PO_term_to_color < 25)
     {
         push @supplemental_PO_terms, $term;
         $PO_term_to_color{$term} = "$color";
-        print $PO_term_fHandle "$term\t$color\n";
+        $PO_term_to_pixel{$term} = $colors_to_pixel{$color};
+	print $PO_term_fHandle "$term\t$PO_term_to_color{$term}\t$PO_term_to_pixel{$term}\n";
     }
 }
 
@@ -89,6 +109,7 @@ while (scalar keys %PO_term_to_color < 25)
 my $repeated_PO_term = $unique_PO_terms[$rand_index]; 
 push @unique_PO_terms, $repeated_PO_term;
 $important_info{'repeated_PO'} = $repeated_PO_term;
+print $PO_term_fHandle "$repeated_PO_term is repeated and has children terms";
 
 #Selects two terms to have children terms
 #One PO_term is before the repeated term  and the other is after
@@ -104,6 +125,7 @@ until ($j < $rand_index)
 }
 my ($other_term_i, $other_term_j) = ($unique_PO_terms[$i], 
 					$unique_PO_terms[$j]);
+print $PO_term_fHandle "$other_term_i and $other_term_j are other terms with children terms";
 
 #Assigns children terms
 #Repeated term has all supplemental
@@ -131,10 +153,6 @@ for my $term (@test_with_child)
     my @unique_child = keys %temp;
     $child_PO_term{$term} = \@unique_child;
     print $PO_term_fHandle "$term\t@unique_child\n";
-    for my $child (@unique_child)
-    {
-       diag("$term\t$PO_term_to_color{$term}\t" . $PO_term_to_color{$child});
-    }
 }
 $child_PO_term{$other_term_j} = [@{$child_PO_term{$other_term_j}},
 			          $repeated_PO_term, 
@@ -151,7 +169,8 @@ my $test_analyzer =
 				 'data'=> \%data,
                                  'PO_term_to_color'=> \%PO_term_to_color,
 				 'PO_term_order' => \@unique_PO_terms,
-                                 'PO_terms_childs' => \%child_PO_term);
+                                 'PO_terms_childs' => \%child_PO_term,
+				 'PO_term_to_coord' => \%PO_term_to_pixel);
 diag('Tests whether Analyzer was created');
 isa_ok($test_analyzer, 'SGN::Feature::ExpressionViewer::Analyzer');
 
@@ -402,12 +421,6 @@ for my $PO_term (keys %data)
 
 #Sets the comparison
 $test_analyzer->compare_data(\%comparison);
-
-for my $term ($test_analyzer->compare_converter->tissues)
-{
-    diag($term);
-    #diag($test_analyzer->compare_converter->gene_signal_in_tissue->{$term});
-}
 
 #Tests to make sure everything's okay
 diag('Tests whether compare_converter was created');

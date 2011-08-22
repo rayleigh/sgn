@@ -9,6 +9,7 @@ has 'schema' => (isa => 'Bio::Chado::Schema', is => 'rw', required => 1,
 has 'gene_config_file_name' => (isa => 'Str', is => 'rw', required => 1,
 			  trigger => sub {shift->_parse_gene_config_file;});
 has 'PO_term_to_color' => (isa => 'HashRef', is => 'ro');
+has 'color_to_coord' => (isa => 'HashRef[Str]', is => 'ro');
 has 'coordinates_to_link' => (isa => 'HashRef', is => 'ro',
                                 builder => '_parse_gene_config_file');
 has 'data_source' => (isa => ' ', is => 'rw', required => 1, 
@@ -46,7 +47,8 @@ sub _parse_gene_config_file
        $entries[1] =~ s/\s//g;
        $entries[2] =~ s/\s//g;
        $self->PO_term_to_color->{$entries[0]} = $entries[1];
-       $self->coordinates_to_link->{$entries[2]} = $entries[3];
+       $self->color_to_coord->{$entries[1]} = $entries[2];
+       $self->coordinates_to_link->{$entries[3]} = $entries[4];
    }
    $self->coordinates_to_link;
 }
@@ -165,6 +167,25 @@ sub _get_children_accession_from_rs
    }
    return @child_accession;
 }
+
+sub _searching_for_coord
+{
+   my ($self, $red, $green, $blue, @coords) = @_;
+   my $color_index = $self->image->colorExact($red, $green, $blue);
+   my ($avg_x, $avg_y) = (0,0);
+   for my $coord (@coords)
+   {
+       if ($coord =~ /(.*?),(.*)/)
+       {
+             $avg_x += $1;
+	     $avg_y += $2;
+       }
+   }
+   $avg_x /= @coords;
+   $avg_y /= @coords;
+   while ($ and $avg_y >= 0)
+}
+
 
 __PACKAGE__->meta->make_immutable;
 1;

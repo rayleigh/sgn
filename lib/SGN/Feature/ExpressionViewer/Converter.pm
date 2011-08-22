@@ -75,11 +75,9 @@ sub calculate_relative
    $max_dif = ($max_dif > $abs_val_min_dif) ? $max_dif:$abs_val_min_dif;
    my ($max_color_index, $min_color_index) = (0,0);
    my %tissue_to_RGB_val = (); 
-   #print "The median is $median. The max is $max, min is $self->stats_obj->min.";
    foreach my $tissue (keys %tissue_to_ratio)
    {
       my $signal = $tissue_to_ratio{$tissue};
-      #print "$signal";
 
       #Sets $intensity to 255 if $signal > $threshold
       my $intensity = ($signal <= $max) ?  
@@ -94,7 +92,6 @@ sub calculate_relative
           $max_color_index = $intensity if $max_color_index < $intensity 
 	      						   and $max > $median;
           $tissue_to_RGB_val{$tissue} = [255, 255 - $intensity, 0];
-          #print " here\t" . $intensity . "\n";
       }
       else
       {
@@ -103,7 +100,6 @@ sub calculate_relative
 		($max_color_index == 0 || $max_color_index < $intensity);
           $tissue_to_RGB_val{$tissue} = 
 			[255 + $intensity, 255 + $intensity, - $intensity];
-          #print " there\t" . $intensity . "\n";
       }
    }
    my $max_color = [];
@@ -143,8 +139,6 @@ sub calculate_comparison
       {
          $dif_in_gene_sig{$tissue} = $gene1Sig/$gene2Sig;
          $dif_in_control_sig{$tissue} = $gene1Control/$gene2Control;
-         #print 
-	#"$tissue\t$dif_in_gene_sig{$tissue}\t$dif_in_control_sig{$tissue}\n";
       }
    }
    my $temp_gene_analysis = 

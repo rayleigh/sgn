@@ -21,7 +21,6 @@ has 'compare_data' => (isa => 'HashRef[Str]', is => 'rw', default => sub {{}},
 		                      my ($e_data_ref, $c_data_ref) =
 		                         $self->_parse_data_from_data_ref(
 					                $data_ref);
-				      print "Yeah";
 		       		      $self->compare_converter->
 					 gene_signal_in_tissue(
 							     $e_data_ref);
@@ -29,12 +28,14 @@ has 'compare_data' => (isa => 'HashRef[Str]', is => 'rw', default => sub {{}},
 				         control_signal_for_tissue(
                                                              $c_data_ref);
 				     });
+has 'PO_term_to_coord' => (isa => 'HashRef[ArrayRef[Str]]', 
+					     is => 'rw', required => 1);
 has 'PO_term_to_color' => (isa => 'HashRef[Str]', is => 'rw', 
 			     required => 1, traits => ['Hash'], 
 			       handles => {picture_PO_terms => 'keys'});  
 has 'PO_term_order' => (isa => 'ArrayRef[Str]', is => 'rw', required=>1);
 has 'PO_terms_childs' => 
-		 (isa => 'HashRef[ArrayRef]', is => 'rw', required => 1);
+	   (isa => 'HashRef[ArrayRef]', is => 'rw', default => sub {{}});
 has 'PO_terms_not_shown' => (isa => 'ArrayRef[Str]', is => 'rw',
 			       traits => ['Array'], 
 			          handles => {note_term_not_shown => 'push'});
@@ -82,7 +83,6 @@ sub _parse_data_from_data_ref
        my @data_sep = split(/,/,$data_hash{$PO_term});
        $experiment_data{$PO_term} = $data_sep[0];
        $control_data{$PO_term} = $data_sep[1];
-       print "$PO_term\t$experiment_data{$PO_term}\t$control_data{$PO_term}\n";
    }
    return (\%experiment_data, \%control_data);
 }
@@ -90,7 +90,9 @@ sub _parse_data_from_data_ref
 #Creates the Colorer, which will hold and modify the picture
 sub _build_colorer
 {
-   SGN::Feature::ExpressionViewer::Colorer->new('image_source'=>shift->image_source );
+   my $self = shift;
+   SGN::Feature::ExpressionViewer::Colorer->new(
+				'image_source' => $self->image_source);
 }
 
 #Makes a picture showing the gene's expression levels
@@ -169,10 +171,10 @@ sub _change_image
    for my $term (keys %color_of_picture_PO_terms)
    {
        my $current_color = $self->PO_term_to_color->{$term}; 
-       $self->colorer->changeColorIndex(split(/,/, $current_color),
+       $self->colorer->change_color(
+			     $self->PO_term_to_coord->{$term},
+				split(/,/, $current_color),
 			         @{$color_of_picture_PO_terms{$term}});
-       my @temp = @{$color_of_picture_PO_terms{$term}};
-       print $temp[0] . $temp[1] . $temp[2] . "\n"; 
    }
 }
 
@@ -239,6 +241,28 @@ sub _get_relative_legend_outline
    $outline{$max} = ($max_is_dif_color) ? "255,0,0":join(",", @$max_colors); 
    return \%outline;
 }
+
+#sub _searching_for_coord
+#{
+   #my ($self, $red, $green, $blue, @coords) = @_;
+   #my $color_index = $self->image->colorExact($red, $green, $blue);
+   #my ($avg_x, $avg_y) = (0,0);
+   #for my $coord (@coords)
+   #{
+       #if ($coord =~ /(.*?),(.*)/)
+       #{
+             #$avg_x += $1;
+             #$avg_y += $2;
+       #}
+   #}
+   #$avg_x /= @coords;
+   #$avg_y /= @coords;
+   #my ($x, $y) = ($avg_x, $avg_y);
+   #while ($self->image->getPixel($x, $y) and $y >= 0 and $y <= $self->image->height)
+   #{
+
+   #}
+#}
 
 __PACKAGE__->meta->make_immutable;
 1;

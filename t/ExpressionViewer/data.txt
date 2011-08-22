@@ -1,0 +1,7 @@
+evm	196.48	170.25	0.2	1.15	evm,	To the Experiment
+mvm	171.47	170.25	0.01.0	mvm,	To the Experiment
+lvm	136.14	170.25	-0.33	0.79	lvm,	To the Experiment
+tm	175.56	170.25	0.04	1.03	tm,	To the Experiment
+sim	141.72	170.25	-0.27	0.83	sim,	To the Experiment
+fm	140.58	170.25	-0.28	0.82	fm,	To the Experiment
+sym	160.45	170.25	-0.09	0.94	sym,	To the Experimentrint $str;
