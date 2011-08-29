@@ -1,6 +1,6 @@
 package SGN::Feature::ExpressionViewer::Loader;
 use Moose;
-use XML::Twig;
+use Config::General;
 use Bio::Chado::Schema::Cv;
 use Bio::Chado::Schema;
 use CXGN::GEM::Schema;
@@ -10,13 +10,13 @@ use CXGN::GEM::Experiment;
 
 has 'schema' => (isa => 'Bio::Chado::Schema', is => 'rw', required => 1);
 has 'config_file_name' => (isa => 'Str', is => 'ro', required => 1);
-has 'template_list' => (isa => 'ArrayRef[Str]', is => 'ro', 
+has 'template_list' => (isa => 'ArrayRef[Str]', is => 'rw', 
 			   traits => ['Array'],
  				handlers => {note_template => 'push'});
-has 'img_name_to_src' => (isa => 'HashRef[Str]', is => 'ro',
+has 'img_name_to_src' => (isa => 'HashRef[Str]', is => 'rw',
 			     traits => ['Hash'], 
 				handlers => {img_list => 'keys'}); 
-has 'img_info' => (isa => 'HashRef', is => 'ro', 
+has 'img_info' => (isa => 'HashRef', is => 'rw', 
 		      traits => ['Hash'], handlers => {info_list => 'values'},
 		          builder => '_parse_config_file');
 
@@ -29,15 +29,35 @@ has 'img_info' => (isa => 'HashRef', is => 'ro',
 sub _parse_config_file
 {
    my $self = shift;
-   $self->template_list = [];
-   my $t = XML::Twig->new(twig_handlers => 
-			  {
-			     'template_name' => sub {$self->note_template( 
-							      $_->text_only);},
-			     'img_info' => sub{_get_info_about_img(@_, $self);} 
-			  });
-   $t->parsefile($self->config_file_name);
-   $t->purge;
+   my $conf = new Config::General($self->config_file_name);
+   my %config = $conf->getall();
+   $self->template_list($config{'template'});
+   $self->img_name_to_src(map {$_ => $config->{$_}} if $_ ne 'template'}
+							       keys %config);
+   my (@PO_term_order, %PO_term_to_color,
+                                %PO_term_location, %coord_to_link);
+   my $cxgn_exp_obj = CXGN::GEM::Experiment->new($self->schema);
+   for my $img ($self->img_list)
+   {
+      my $unsorted_img_info = $config{$img};
+      for my $exp (keys %$unsorted_img_info) 
+      {
+         $cxgn_exp_obj->set_experiment_name($exp);
+         my $exp_id = $cxgn_exp_obj->get_experiment_id;
+         for my $PO_term (keys %{$$unsorted_img_info{$exp}})
+         {
+            my $PO_term = $exp_id . $PO_term;
+            my $unsorted_PO_term_info = $$unorg_img_info{$exp}{$PO_term};
+            $PO_term_to_color{$PO_term} = $$unsorted_PO_term_info{'color'};
+            $PO_term_location{$PO_term} = $$unsorted_PO_term_info{'pixel'};
+            my $area_coord = $$unsorted_PO_term_info{'coord'};
+            $coord_to_link->{join('#', @$area_coord)} =
+                                   	  $$unsorted_PO_term_info{'link'};
+         }
+      }
+      $self->img_info->{$img} = [\%PO_term_to_color,
+                                         \%PO_term_location, \%coord_to_link];
+   }
    $self->img_info;
 }
 
