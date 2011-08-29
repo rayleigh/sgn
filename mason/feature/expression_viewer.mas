@@ -3,22 +3,20 @@
 <div style="margin-left: 30px">
 <table summary="" border="0" cellpadding="5" cellspacing="5">
 <tr>
-% @titles=['Image Source', 'Data Source', 'Mode', 'Gene One Id', 'Gene Two Id'];
+% @titles=['Image Source', 'Mode', 'Gene One Id', 'Gene Two Id'];
 % for my $title (@$titles) {
 <th><% $title %></th>  
 %}
-<th>Signal Threshold<input type = "checkbox" name = "threshold_on" />
+<th>Override<input type = "checkbox" name = "override" /></th>
+<th>Mask signal<input type = "checkbox" name = "mask_signal_on" /></th>
 </tr>
 <tr>
 <form method="POST" action= "/ " name = "eFP_requests">
 <%perl>
-@drop_boxes = ['image_selected', 'data_source', 'mode'];
-%drop_box_options = {'image_selected' => keys %image_name_to_image_source,
-			'data_source' => @data_sources,
-			   'mode' => @modes};
+@drop_boxes = ['image_selected', 'mode'];
+%drop_box_options = {'image_selected' => @image_list, 'mode' => @modes};
 %drop_box_option_selected = {'image_selected' => $cur_image_name,
-			        'data_source' => $cur_data_source,
-				   'mode' => $cur_mode};
+						   'mode' => $cur_mode};
 </%perl>
 %foreach my $drop_box_type (@$drop_boxes) {
 <td><select name = "<% $drop_box_type %>" 
@@ -27,18 +25,21 @@
    <option><% $option %></option>
 % } }
 <td>
-<input type = "text" name = "gene_one" value = "<% $gene_one %>" />
+<input type = "text" name = "micro_one" value = "<% $micro_one %>" />
 </td>
 <td>
-<input type = "text" name = "gene_two" value = "<% $gene_two %>"
+<input type = "text" name = "micro_two" value = "<% $micro_two %>"
 % unless ($ARGS{mode} eq 'comparison') {
 disabled
 %}
 />
 </td>
-<td><input type = "text" name = "threshold_value" 
-				value = "<% $signalThreshold %>" 
-% if ($ARGS{threshold_on}) {
+<td>
+<input type = "text" name = "threshold_value" value = "<% $threshold %>" /> 
+</td>
+<td>
+<input type = "text" name = "signal_mask" value = "<% $signal_mask %>"
+% unless ($ARGS{mask_signal_on}) {
 disabled
 % }
 />
@@ -46,6 +47,24 @@ disabled
 <td><input type = "submit" value = "Fetch Image"></td>
 </form>
 </tr>
+%if ($$error_message{$threshold} || $$error_message{$signal_mask}) {
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+%if ($$error_message{$threshold}) {
+<td style = "color:red; font-size:10px">
+<% $$error_message{$threshold} %>
+</td>
+%}
+%if ($$error_message{$signal_mask}) {
+<td style = "color:red; font-size:10px">
+<% $$error_message{$signal_mask} %>
+</td>
+%}
+</tr>
+%}
 <tr>
 <td>
 <table cellpadding = 5>
@@ -61,7 +80,7 @@ disabled
 %}
 </table>
 </td>
-<td colspan = '6', rowspan = '6'>
+<td colspan = '5', rowspan = '6'>
 <img source = "<% $image_name_to_image_source{$cur_image_name} %>" 
 	alt = "<% $cur_image_name %>" usemap = "#picture_links" />
 <map name="picture_links">
@@ -75,15 +94,16 @@ disabled
 </div>
 
 <%args>
-%image_name_to_image_source = ('' => '')
-@data_sources = ('')
-@modes = ('')
-$gene_one => ''
-$gene_two => ''
-$signalThreshold => 0
-$cur_image_name = '';
-$cur_data_souce = '';
-$cur_mode = '';
-%coord_of_img_links = '';
-$legend_ref = '';
+@image_list
+@modes = ('Absolute')
+$micro_one => ''
+$micro_two => ''
+$threshold => -9**9**9
+$signal_mask => -9**9**9
+$cur_image_name = ''
+$cur_image_source => ''
+$cur_mode = ''
+%coord_of_img_links = ''
+$legend_ref = ''
+%error_message => (threshold => '', signal_mask => '')
 </%args> 

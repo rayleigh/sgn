@@ -8,21 +8,11 @@ SGN::Controller::ExpressionViewer.pm - controller for ExpressionViewer page
 package SGN::Controller::ExpressionViewer;
 use Moose;
 use namespace::autoclean;
-use SGN::ExpressionViewer::Analyzer;
-use SGN::ExpressionViewer::Loader;
-use constant config_file_name => 'config_file.txt';
+use File::Temp;
 
-has 'img_name_to_src' => (
-    is => 'ro',
-    isa => 'HashRef',
-);
+$File::Temp::KEEP_ALL = 1;
 
-has 'img_name_to_gene_config' =>
-(
-    is => 'ro',
-    isa => 'HashRef',
-    builder => '_parse_config_file'
-);
+Somehow has schema object
 
 has 'loader' => (
     is => 'ro',
@@ -30,55 +20,143 @@ has 'loader' => (
 );
 
 has 'analyzer' => (
-    is => "ro",
+    is => "rw",
     isa => 'SGN::Feature::ExpressionViewer::Converter',
-    lazy_build = 1
 );
 
-has 'img_src_list' => (
-    is => "ro",
-    isa => 'Hash',
-    lazy_build = 1
+has 'current_img_name' => (
+    is => 'rw',
+    isa => 'Str',
 );
 
-#Assumes config_file has this format:
-#img_name\timg_source\tgene_config_file_name\n
-#Ex: Flower\tflower.png\tflower_config_file
-sub _parse_config_file
-{
-    my $self = shift;
-    open CONFIG, "<", config_file_name;
-    while (<CONFIG>)
-    {
-       chomp;
-       $entries = split;
-       $self->img_name_to_src->{$entries[0]} = $entries[1];
-       $self->img_src_to_gene_config->{$entries[0]} = $entries[2]; 
-    }
-    $self->img_src_to_gene_config; 
-}
+has 'current_micro_one_name' => (
+    is => 'rw',
+    isa => 'Str',
+);
+
+has 'current_micro_two_name' => (
+    is => 'rw',
+    isa => 'Str',
+    default => {''}
+);
+
+has 'current_mode' => (
+    is => 'rw',
+    isa => 'Str',
+    default => {'Absolute';};
+);
 
 BEGIN { extends 'Catalyst::Controller' }
 
 sub default :Path('expression_viewer/default')
 {
    my ($self, $c) = @_;
-   
+   $self->_build_loader($c) unless $self->loader;
+   my $info_list = $self->loader->info_list;
+   $self->_build_form($c, ${$self->loader->template}[0], 
+      $self->loader->img_name_to_src->{$self->current_img_name},
+ 	             $self->current_mode, $info_list[2]);
 }
 
 sub submit :Path('expression_viewer/submit')
 {
-   my ($self, $c) = @_;
-   my $img_name = $c->req->param{'image_selected'};
-   my $data_source = $c->req->param{'data_source'};
-   my $mode = $c->req->param{'mode'};
-   my $gene_one = $c->req->param{'gene_one'};
-   my $gene_two = $c->req->param{'gene_two'} if $mode eq 'compare';
-   my $schema = ?;
-   $self->_update_loader_and_analyzer($schema, 
-	$self->img_name_to_gene_config{$gene_config_file}, $data_source);  
-   'image_selected', 'data_source', 'mode'
-   
+    my ($self, $c) = @_;
+    my $img_name = $c->req->param{'image_selected'};
+    my $mode = $c->req->param{'mode'};
+    my $micro_one = $c->req->param{'micro_one'};
+    my ($micro_two, $compare_data_ref);
+    if ($mode eq 'Comparison')
+    {
+        my $micro_two = $c->req->param{'micro_two'};
+        if ($micro_two eq $self->$current_micro_two_name)
+        {
+	   $compare_data_ref = $self->analyzer->compare_data_ref;
+        }
+        elsif ($micro_two eq $self->$current_micro_one_name 
+						and $self->analyzer)
+        {
+            $compare_data_ref = $self->analyzer->data; 
+        }
+        else
+        {
+	   $compare_data_ref = 
+	       $self->loader->assign_data_to_terms($micro_two,
+			   @{$self->loader->get_list_of_all_PO_terms});
+        }
+    }
+    
+    if (!($self->analyzer) || $img_name ne $self->current_img_name) 
+    { 
+        my ($data_ref, $PO_terms_child_ref, $PO_term_order_ref, 
+           $PO_term_to_color_ref, $PO_term_to_pixel_ref, $coord_to_link_ref) = 
+              $self->loader->get_refs_of_required_info($img_name, $micro_one)
+        $self->analyzer = SGN::Feature::ExpressionViewer::Analyzer->new(
+			 'image_source'=> 
+			     $self->loader->img_name_to_src->{$img_name},
+			 'data' => $data_ref,
+			 'PO_term_to_color' => $PO_term_to_color_ref,
+			 'PO_term_order' => $PO_term_order_ref,
+			 'PO_terms_childs' => $PO_terms_child_ref,
+			 'PO_term_pixel_location' => $PO_term_to_pixel_ref);
+    }   
+    elsif ($micro_one ne $self->current_micro_one_name)
+    {
+        $self->analyzer->data(
+            $self->loader->assign_data_to_terms($micro_one,
+		              @{$self->loader->get_list_of_all_PO_terms}));
+    }
+    $self->analyzer->compare_data($compare_data_ref) 
+						if ($mode eq 'Comparison');
+    my ($threshold, $override, $mask_ratio, $grey_mask_on) = 
+	 ($c->req->param{'threshold_value'}, 
+	      $c->req->param{'override'},
+		  $c->req->param{'signal_mask'}
+		      $c->req->param{'mask_signal_on'});
+    if ($threshold !~ [\d\.] and $mask_ratio !~ [\d\.])
+    {
+        eval{'$self->analyzer->make_' . $mode . 
+	    "_picture($threshold, $override, $mask_ratio, $grey_mask_on)";};
+        
+        $img_src = #some kind of file
+        $c->stash->{$error_message}->{'threshold'} = '';
+        $c->stash->{$error_message}->{'threshold'} = '';
+    }
+    else
+    {
+        
+    }
+    $self->_build_form($c, $img_name, $img_src, $mode, $micro_two
+}
+
+sub _build_form
+{
+   my ($self, $c, $img_name, $img_src, 
+	  $mode, $micro_one, $micro_two, $coord_to_link_ref) = @_;
+   if ($micro_two)
+   {
+       $c->stash->{micro_two} = $micro_two;
+       $self->current_micro_two_name($micro_two); 
+   }
+   $c->stash(
+       'image_list' => $self->loader->img_list;
+       'cur_image_name' => $img_name,
+       'cur_image_source' => $img_src,
+       'cur_mode' => $mode,
+       'micro_one' => $micro_one,
+       'coord_of_img_links' => ${$self->loader->img_info->{$img_name}}[2],
+       'template' = '/feature/expression_viewer.mas',
+   );
+   $self->current_img_name($img_name);
+   $self->current_micro_one_name($micro_one);
+   $self->current_mode($mode);
+}
+
+sub _build_loader
+{
+    my ($self, $c) = @_;
+    SGN::Feature::ExpressionViewer::Loader->new(
+        'schema' => $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado'),
+	    'config_file_name' => $c-> );
 }
 
 sub _update_loader

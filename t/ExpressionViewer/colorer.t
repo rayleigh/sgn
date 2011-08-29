@@ -38,7 +38,7 @@ close $fh;
 
 #Tests the Colorer with the file of the three rectangles created before
 my $highlighter = SGN::Feature::ExpressionViewer::Colorer->new('image_source' => $testoutfile);
-can_ok($highlighter, qw(change_color writeImageAsPNGFile _pixel_selected_is_valid reset_image _build_image));
+can_ok($highlighter, qw(change_color writeImageAsPNGFile pixel_selected_has_right_color reset_image _build_image));
 
 diag("Trying to change non-existing color");
 $highlighter->change_color($color_to_pixel{join(",",@test_color)},0,2,5,@test_color);

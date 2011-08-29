@@ -31,7 +31,7 @@ my $test_analyzer = SGN::Feature::ExpressionViewer::Analyzer->new(
 			'PO_term_to_color' => \%PO_term_to_color,
 			'PO_term_order' => \@order,
 			'PO_terms_childs' => \%children,
-			'PO_term_to_coord' => \%PO_term_to_coord);
+			'PO_term_pixel_location' => \%PO_term_to_coord);
 $test_analyzer->make_absolute_picture(-9**9**9,0,0,0);
 my $fHandle = File::Temp->new(SUFFIX=>'.png');
 $test_analyzer->colorer->writeImageAsPNGFile($fHandle->filename);

@@ -24,8 +24,7 @@ sub change_color
    for my $coord (@$coord_ref)
    {
       my ($x, $y) = split(/,/, $coord);
-      #print "$cur_color\t" . $self->image->getPixel($x,$y) . "\t" . $self->image->colorExact($red, $green, $blue) . "\t" . $self->image->colorResolve($red, $green, $blue) . "\n";
-      if ($self->_pixel_selected_is_valid($x, $y, $red, $green, $blue))
+      if ($self->pixel_selected_has_right_color($x, $y, $red, $green, $blue))
       {
          my $new_color = 
 	      $self->image->colorAllocate($new_red, $new_green, $new_blue);
@@ -34,8 +33,8 @@ sub change_color
    }
 }
 
-#RGB values are valid if they do not specify white
-sub _pixel_selected_is_valid
+#Tests whether pixel selected has the right RGB values
+sub pixel_selected_has_right_color
 {
    my ($self, $x, $y, $red, $green, $blue) = @_;
    my @color = $self->image->rgb($self->image->getPixel($x,$y));

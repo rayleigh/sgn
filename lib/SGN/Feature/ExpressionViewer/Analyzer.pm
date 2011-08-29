@@ -28,7 +28,7 @@ has 'compare_data' => (isa => 'HashRef[Str]', is => 'rw', default => sub {{}},
 				         control_signal_for_tissue(
                                                              $c_data_ref);
 				     });
-has 'PO_term_to_coord' => (isa => 'HashRef[ArrayRef[Str]]', 
+has 'PO_term_pixel_location' => (isa => 'HashRef[ArrayRef[Str]]', 
 					     is => 'rw', required => 1);
 has 'PO_term_to_color' => (isa => 'HashRef[Str]', is => 'rw', 
 			     required => 1, traits => ['Hash'], 
@@ -172,7 +172,7 @@ sub _change_image
    {
        my $current_color = $self->PO_term_to_color->{$term}; 
        $self->colorer->change_color(
-			     $self->PO_term_to_coord->{$term},
+			     $self->PO_term_pixel_location->{$term},
 				split(/,/, $current_color),
 			         @{$color_of_picture_PO_terms{$term}});
    }
@@ -246,22 +246,47 @@ sub _get_relative_legend_outline
 #{
    #my ($self, $red, $green, $blue, @coords) = @_;
    #my $color_index = $self->image->colorExact($red, $green, $blue);
-   #my ($avg_x, $avg_y) = (0,0);
+   #my ($avg_x, $avg_y, $max_x, $max_y, $min_y, $min_x) = (0,0,0,0,-1,-1);
    #for my $coord (@coords)
    #{
        #if ($coord =~ /(.*?),(.*)/)
        #{
-             #$avg_x += $1;
-             #$avg_y += $2;
+	     #my ($temp_x, $temp_y) = ($1, $2);
+             #$avg_x += $temp_x;
+             #$avg_y += $temp_y;
+	     #if ($temp_x > $max_x)
+             #{
+	         $max_x = $temp_x;
+	     #}
+	     #elsif ($temp_x < $min_x || $min_x == -1)
+ 	     #{
+		 $min_y = $temp_y;
+	     #}
+	     #if ($temp_y > $may_y)
+	     #{
+		 $may_y = $temp_y;
+	     #}
+	     #elsif ($temp_y < $min_y || $min_y == -1)
+	     #{
+		 $min_y = $temp_y;
+	     #}
        #}
    #}
    #$avg_x /= @coords;
    #$avg_y /= @coords;
-   #my ($x, $y) = ($avg_x, $avg_y);
-   #while ($self->image->getPixel($x, $y) and $y >= 0 and $y <= $self->image->height)
+   #my ($x, $y, $i, $pi_over_4) = (int($avg_x), int($avg_y), 0, atan2(1,1));
+   #while (
+   #!($self->image->pixel_selected_has_right_color($x, $y, $red, $green, $blue))         #and $x > min_x and $x < $max_x 
+		#and $y < $max_y and $x < max_x)
    #{
-
+        #($x, $y) = (cos($pi_over_4 * $i), sin($pi_over_4 * $i));
+	#$x = ($x >= 0) ? ceil($x) : floor($x);
+        #$x = $x * (int($i/8) + 1) + $avg_x;  
+        #$y = ($y >= 0) ? ceil($y) : floor($y);
+	#$y = $y * (int($i/8) + 1) + $avg_y;
+	#$i++;
    #}
+   #if 
 #}
 
 __PACKAGE__->meta->make_immutable;

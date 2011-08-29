@@ -165,12 +165,12 @@ close $PO_term_fHandle;
 
 my $test_analyzer = 
    SGN::Feature::ExpressionViewer::Analyzer->new(
-				 'image_source'=>'test_img.png',
-				 'data'=> \%data,
-                                 'PO_term_to_color'=> \%PO_term_to_color,
-				 'PO_term_order' => \@unique_PO_terms,
-                                 'PO_terms_childs' => \%child_PO_term,
-				 'PO_term_to_coord' => \%PO_term_to_pixel);
+			       'image_source'=>'test_img.png',
+			       'data'=> \%data,
+                               'PO_term_to_color'=> \%PO_term_to_color,
+			       'PO_term_order' => \@unique_PO_terms,
+                               'PO_terms_childs' => \%child_PO_term,
+			       'PO_term_pixel_location' => \%PO_term_to_pixel);
 diag('Tests whether Analyzer was created');
 isa_ok($test_analyzer, 'SGN::Feature::ExpressionViewer::Analyzer');
 
