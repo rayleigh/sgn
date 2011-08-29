@@ -17,7 +17,8 @@ has 'img_name_to_src' => (isa => 'HashRef[Str]', is => 'ro',
 			     traits => ['Hash'], 
 				handlers => {img_list => 'keys'}); 
 has 'img_info' => (isa => 'HashRef', is => 'ro', 
-		      builder => '_parse_config_file');
+		      traits => ['Hash'], handlers => {info_list => 'values'},
+		          builder => '_parse_config_file');
 
 #Config file should have this format:
 #PO term\tColor RGB value and include data\tCoordinate on map\tLink
