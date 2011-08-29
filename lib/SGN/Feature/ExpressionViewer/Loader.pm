@@ -46,13 +46,15 @@ sub _parse_config_file
          my $exp_id = $cxgn_exp_obj->get_experiment_id;
          for my $PO_term (keys %{$$unsorted_img_info{$exp}})
          {
-            my $PO_term = $exp_id . $PO_term;
-            my $unsorted_PO_term_info = $$unorg_img_info{$exp}{$PO_term};
-            $PO_term_to_color{$PO_term} = $$unsorted_PO_term_info{'color'};
-            $PO_term_location{$PO_term} = $$unsorted_PO_term_info{'pixel'};
+	    my $unsorted_PO_term_info = $$unorg_img_info{$exp}{$PO_term};
+            my $full_PO_term = $exp_id . $PO_term;
+            $PO_term_to_color{$full_PO_term} = 
+			                 $$unsorted_PO_term_info{'color'};
+            $PO_term_location{$full_PO_term} = 
+			                 $$unsorted_PO_term_info{'pixel'};
             my $area_coord = $$unsorted_PO_term_info{'coord'};
             $coord_to_link->{join('#', @$area_coord)} =
-                                   	  $$unsorted_PO_term_info{'link'};
+                                   	 $$unsorted_PO_term_info{'link'};
          }
       }
       $self->img_info->{$img} = [\%PO_term_to_color,
