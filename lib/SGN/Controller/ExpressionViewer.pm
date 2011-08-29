@@ -112,20 +112,27 @@ sub submit :Path('expression_viewer/submit')
 	      $c->req->param{'override'},
 		  $c->req->param{'signal_mask'}
 		      $c->req->param{'mask_signal_on'});
-    if ($threshold !~ [\d\.] and $mask_ratio !~ [\d\.])
+    if ($threshold !~ /[\d\.]{length($threshold)}/ 
+	    and $mask_ratio !~ /[\d\.]{length($mask_ratio)}/)
     {
         eval{'$self->analyzer->make_' . $mode . 
 	    "_picture($threshold, $override, $mask_ratio, $grey_mask_on)";};
-        
+        my $fHandle = File::Temp->new(SUFFIX=>'.png');
+        my $img_src = $c-> $fHandle->filename;
+        $self->analyzer->colorer->writeImageAsPNGFile($raw_img_src);
+        close $fHandle;
         $img_src = #some kind of file
-        $c->stash->{$error_message}->{'threshold'} = '';
-        $c->stash->{$error_message}->{'threshold'} = '';
+        $c->stash->{$filled_correctly}->{'threshold'} = 1;
+        $c->stash->{$filled_correctly}->{'signal_mask'} = 1;
     }
     else
     {
-        
+        $c->stash->{$filled_correctly}->{'threshold'} = 
+		       ($threshold !~ /[\d\.]{length($threshold)}/);
+        $c->stash->{$filled_correctly}->{'signal_mask'} = 
+		       ($threshold !~ /[\d\.]{length($mask_ratio)}/);
     }
-    $self->_build_form($c, $img_name, $img_src, $mode, $micro_two
+    $self->_build_form($c, $img_name, $img_src, $mode, $micro_two);
 }
 
 sub _build_form

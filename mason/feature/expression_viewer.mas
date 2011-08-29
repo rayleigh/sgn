@@ -47,22 +47,20 @@ disabled
 <td><input type = "submit" value = "Fetch Image"></td>
 </form>
 </tr>
-%if ($$error_message{$threshold} || $$error_message{$signal_mask}) {
+%unless ($filled_correctly{$threshold} || $filled_correctly{$signal_mask}) {
 <tr>
 <td></td>
 <td></td>
 <td></td>
 <td></td>
-%if ($$error_message{$threshold}) {
+%for my $field (keys %$filled_correctly) {
+%unless ($filled_correctly{$field}) {
 <td style = "color:red; font-size:10px">
-<% $$error_message{$threshold} %>
+<% ucfirst $field %> is filled incorrectly
 </td>
-%}
-%if ($$error_message{$signal_mask}) {
-<td style = "color:red; font-size:10px">
-<% $$error_message{$signal_mask} %>
-</td>
-%}
+%} else {
+<td></td>
+%}}
 </tr>
 %}
 <tr>
@@ -84,9 +82,9 @@ disabled
 <img source = "<% $image_name_to_image_source{$cur_image_name} %>" 
 	alt = "<% $cur_image_name %>" usemap = "#picture_links" />
 <map name="picture_links">
-%for my $coord (keys %coord_of_img_links) { 
+%for my $coord (keys %$coord_of_img_links_ref) { 
    <area shape = "polygon" coords = "<% $coord %>" 
-		    href = "<% $coor_of_img_links{$coord} %>" />
+		    href = "<% $$coord_of_img_links_ref{$coord} %>" />
 %}
 </td>
 </tr>
@@ -103,7 +101,7 @@ $signal_mask => -9**9**9
 $cur_image_name = ''
 $cur_image_source => ''
 $cur_mode = ''
-%coord_of_img_links = ''
+$coord_of_img_links_ref = ''
 $legend_ref = ''
-%error_message => (threshold => '', signal_mask => '')
+%filled_correctly => (threshold => 1, signal_mask => 1)
 </%args> 
