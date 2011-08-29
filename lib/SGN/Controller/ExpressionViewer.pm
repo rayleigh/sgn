@@ -46,16 +46,23 @@ has 'current_mode' => (
     default => {'Absolute';};
 );
 
+has 'current_img_source' => (
+    is => 'rw',
+    is => 'Str',
+);
+
 BEGIN { extends 'Catalyst::Controller' }
 
 sub default :Path('expression_viewer/default')
 {
    my ($self, $c) = @_;
    $self->_build_loader($c) unless $self->loader;
-   my $info_list = $self->loader->info_list;
-   $self->_build_form($c, ${$self->loader->template}[0], 
-      $self->loader->img_name_to_src->{$self->current_img_name},
- 	             $self->current_mode, $info_list[2]);
+   my @info_list = $self->loader->info_list;
+   my @img_list = $self->loader->img_list;
+   my $default_img =  $img_list[0];
+   $self->_build_form($c, $default_img, 
+      $self->loader->img_name_to_src->{$default_img},
+	$self->current_mode, $info_list[2], ${$self->loader->template}[0]);
 }
 
 sub submit :Path('expression_viewer/submit')
@@ -64,24 +71,28 @@ sub submit :Path('expression_viewer/submit')
     my $img_name = $c->req->param{'image_selected'};
     my $mode = $c->req->param{'mode'};
     my $micro_one = $c->req->param{'micro_one'};
+    my $made_changes = 0;
     my ($micro_two, $compare_data_ref);
     if ($mode eq 'Comparison')
     {
         my $micro_two = $c->req->param{'micro_two'};
         if ($micro_two eq $self->$current_micro_two_name)
         {
-	   $compare_data_ref = $self->analyzer->compare_data_ref;
+	    $compare_data_ref = $self->analyzer->compare_data_ref;
+            $made_changes++;
         }
         elsif ($micro_two eq $self->$current_micro_one_name 
 						and $self->analyzer)
         {
             $compare_data_ref = $self->analyzer->data; 
+            $made_changes++;
         }
         else
         {
 	   $compare_data_ref = 
 	       $self->loader->assign_data_to_terms($micro_two,
 			   @{$self->loader->get_list_of_all_PO_terms});
+           $made_changes++;
         }
     }
     
@@ -98,12 +109,14 @@ sub submit :Path('expression_viewer/submit')
 			 'PO_term_order' => $PO_term_order_ref,
 			 'PO_terms_childs' => $PO_terms_child_ref,
 			 'PO_term_pixel_location' => $PO_term_to_pixel_ref);
+        $made_changes++;
     }   
     elsif ($micro_one ne $self->current_micro_one_name)
     {
         $self->analyzer->data(
             $self->loader->assign_data_to_terms($micro_one,
 		              @{$self->loader->get_list_of_all_PO_terms}));
+        $made_changes++;
     }
     $self->analyzer->compare_data($compare_data_ref) 
 						if ($mode eq 'Comparison');
@@ -112,16 +125,20 @@ sub submit :Path('expression_viewer/submit')
 	      $c->req->param{'override'},
 		  $c->req->param{'signal_mask'}
 		      $c->req->param{'mask_signal_on'});
-    if ($threshold !~ /[\d\.]{length($threshold)}/ 
-	    and $mask_ratio !~ /[\d\.]{length($mask_ratio)}/)
+    my $img_src = '';
+    if ($made_changes and $threshold !~ /[\d\.]{length($threshold)}/ 
+	    		and $mask_ratio !~ /[\d\.]{length($mask_ratio)}/)
     {
         eval{'$self->analyzer->make_' . $mode . 
 	    "_picture($threshold, $override, $mask_ratio, $grey_mask_on)";};
-        my $fHandle = File::Temp->new(SUFFIX=>'.png');
-        my $img_src = $c-> $fHandle->filename;
-        $self->analyzer->colorer->writeImageAsPNGFile($raw_img_src);
+        my $fHandle = File::Temp->new(SUFFIX=>'.png',
+				      DIR=>
+				      $c->get_conf('static_datasets_path') .
+				      $c->get_conf('image_dir') . 
+				      $c->get_conf('eFP_modified_image_dir'));
+        $img_src = $fHandle->filename;
+        $self->analyzer->colorer->writeImageAsPNGFile($img_src);
         close $fHandle;
-        $img_src = #some kind of file
         $c->stash->{$filled_correctly}->{'threshold'} = 1;
         $c->stash->{$filled_correctly}->{'signal_mask'} = 1;
     }
@@ -131,14 +148,15 @@ sub submit :Path('expression_viewer/submit')
 		       ($threshold !~ /[\d\.]{length($threshold)}/);
         $c->stash->{$filled_correctly}->{'signal_mask'} = 
 		       ($threshold !~ /[\d\.]{length($mask_ratio)}/);
+        $img_src = $self->current_img_source;
     }
     $self->_build_form($c, $img_name, $img_src, $mode, $micro_two);
 }
 
 sub _build_form
 {
-   my ($self, $c, $img_name, $img_src, 
-	  $mode, $micro_one, $micro_two, $coord_to_link_ref) = @_;
+   my ($self, $c, $img_name, $img_src, $coord_to_link_ref
+	  			$mode, $micro_one, $micro_two) = @_;
    if ($micro_two)
    {
        $c->stash->{micro_two} = $micro_two;
@@ -156,6 +174,7 @@ sub _build_form
    $self->current_img_name($img_name);
    $self->current_micro_one_name($micro_one);
    $self->current_mode($mode);
+   $self->current_img_source($img_src);
 }
 
 sub _build_loader
@@ -163,7 +182,8 @@ sub _build_loader
     my ($self, $c) = @_;
     SGN::Feature::ExpressionViewer::Loader->new(
         'schema' => $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado'),
-	    'config_file_name' => $c-> );
+	    'config_file_name' => $c->get_conf('conf_subdir') .
+	                               $c->get_conf('eFP_config_file'));
 }
 
 sub _update_loader
