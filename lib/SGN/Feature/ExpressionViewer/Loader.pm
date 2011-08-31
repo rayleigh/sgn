@@ -30,71 +30,30 @@ sub _parse_config_file
 {
    my $self = shift;
    my $conf = new Config::General($self->config_file_name);
-   my %config = $conf->getall();
+   my %config = $conf->getall;
    $self->template_list($config{'template'});
    $self->img_name_to_src(map {$_ => $config->{$_}} if $_ ne 'template'}
 							       keys %config);
    my (@PO_term_order, %PO_term_to_color,
                                 %PO_term_location, %coord_to_link);
-   my $cxgn_exp_obj = CXGN::GEM::Experiment->new($self->schema);
    for my $img ($self->img_list)
    {
       my $unsorted_img_info = $config{$img};
-      for my $exp (keys %$unsorted_img_info) 
+      for my $PO_term (keys %$unsorted_img_info) 
       {
-         $cxgn_exp_obj->set_experiment_name($exp);
-         my $exp_id = $cxgn_exp_obj->get_experiment_id;
-         for my $PO_term (keys %{$$unsorted_img_info{$exp}})
-         {
-	    my $unsorted_PO_term_info = $$unorg_img_info{$exp}{$PO_term};
-            my $full_PO_term = $exp_id . $PO_term;
-            $PO_term_to_color{$full_PO_term} = 
-			                 $$unsorted_PO_term_info{'color'};
-            $PO_term_location{$full_PO_term} = 
-			                 $$unsorted_PO_term_info{'pixel'};
-            my $area_coord = $$unsorted_PO_term_info{'coord'};
-            $coord_to_link->{join('#', @$area_coord)} =
-                                   	 $$unsorted_PO_term_info{'link'};
-         }
+	 my $unsorted_PO_term_info = $$unsorted_img_info{$PO_term};
+	 $PO_term_to_color{$PO_term} = 
+				      $$unsorted_PO_term_info{'color'};
+	 $PO_term_location{$PO_term} = 
+				      $$unsorted_PO_term_info{'pixel'};
+	 my $area_coord = $$unsorted_PO_term_info{'coord'};
+	 $coord_to_link->{join('#', @$area_coord)} =
+				      $$unsorted_PO_term_info{'link'};
       }
       $self->img_info->{$img} = [\%PO_term_to_color,
                                          \%PO_term_location, \%coord_to_link];
    }
    $self->img_info;
-}
-
-#Parses and extracts information about image in XML file
-sub _get_info_about_img
-{
-   my ($t, $section, $self) = @_;
-   my $img_name = $section->first_child_text('img_name');
-   $self->img_name_to_src{$img_name} = $section->first_child_text('img_src'); 
-   my (@PO_term_order, %PO_term_to_color, 
-		   		%PO_term_location, %coord_to_link);
-   my $cxgn_exp_obj = CXGN::GEM::Experiment->new_by_name($self->schema);
-   while (my $exp = $section->next_sibling('exp'))
-   {
-      my $exp_name = $exp->first_child_text('name');
-      $cxgn_exp_obj->set_experiment_name($exp_name);
-      my $exp_id = $cxgn_exp_obj->get_experiment_id;
-      while (my $PO_term_info = $exp->next_sibling('PO_term_info'))
-      {
-         my $PO_term = $exp_id . $PO_term_info->first_child_text('term');
-	 push @PO_term_order, $PO_term;
-	 $PO_term_to_color{$PO_term} = 
-				$PO_term_info->first_child_text('color');
-	 my @color_coord = $PO_term_info->children_text('pixel');
-         $PO_term_location{$PO_term} = \@color_coord;
-         my @area_coord = $PO_term_info->children_text('coord');
-	 $coord_to_link->{join('#', @area_coord)} =
-		  		$PO_term_info->first_child_text('link');
-	 $t->purge;
-      }
-      $t->purge;
-   }
-   $self->img_info->{$img_name} = [\%PO_term_to_color, 
-				      \%PO_term_location, \%coord_to_link];
-   $t->purge;
 }
 
 sub get_list_of_all_PO_terms_in_picture
@@ -110,20 +69,13 @@ sub get_list_of_all_PO_terms_in_picture
 #and a link between the PO terms' area and a link for more information
 sub get_refs_of_required_info
 {
-   my ($self, $img_name, $template_name) = @_;
-   my $full_picture_PO_terms_ref = ${$self->img_info->{$img_name}}[0];
-   my (%data, %full_term_to_PO_term) = 
-	$self->assign_data_to_terms($template_name, 
+   my ($self, $img_name, $exp_name, $template_name) = @_;
+   my %data = $self->assign_data_to_terms($exp_name, $template_name, 
 				        keys $full_picture_PO_terms_ref);
    my ($PO_terms_child_ref, $PO_term_order_ref) = 
 	$self->_get_PO_terms_child_and_order(\%PO_term_to_full_term,
 						 \%full_term_to_PO_term); 
-   my %PO_term_exists_in_picture = map {$_ => 1} 
-				      keys %$full_picture_PO_terms_ref;
-   my %full_PO_terms_child = 
-	_match_PO_terms_with_children($PO_terms_child_ref,
-					\%PO_term_exists_in_picture);
-   return \%data, \%full_PO_terms_child, $PO_term_order_ref,
+   return \%data, \%PO_terms_child, $PO_term_order_ref,
 	     			    $full_picture_PO_terms_ref,
 		                       ${$self->img_info->{$img_name}}[1],
 	                                  ${$self->img_info->{$img_name}}[2];
@@ -131,29 +83,34 @@ sub get_refs_of_required_info
 
 sub assign_data_to_terms
 {
-   my ($self, $template_name, @PO_terms_list_ref) = @_;
+   my ($self, $exp_name, $template_name) = @_;
+   my $cxgn_exp_obj = CXGN::GEM::Experiment->new_by_name($self->schema, 
+							       $exp_name);
    my $temp_template =
         CXGN::GEM::Template->new_by_name($self->$schema, $template_name);
    my $temp_expr =
         CXGN::GEM::Expression->$temp_template->new($self->schema,
                                         $temp_template->get_template_id);
    my %experiments = $temp_expr->get_experiment;
-   my (%data, %PO_term_to_full_term);
-   for my $term (@$PO_terms_list_ref)
+   my $exp_id = $cxgn_exp_obj->get_experiment_id;
+   my @targets = $exp->get_target_list();
+   my %data;
+   foreach my $target (@targets) 
    {
-      my ($exp_id, $PO_term) = ($1, $2) if $term =~ /(\d*)(PO\d*)/;
-      if ($PO_term_to_full_term{$PO_term})
-      {
-         #Works because of closure in Perl
-         push @{$PO_term_to_full_term{$PO_term}}, $term;
-      }
-      else
-      {
-         $PO_terms_childs_ref{$PO_term} = [$term];
-      }
-      $data{$term} = ${$experiments{$exp_id}}{'median'};
+       my $target_name = $target->get_target_name();
+       my @samples = $target->get_sample_list();
+       foreach my $sample (@samples) 
+       {
+	   my $sample_name = $sample->get_sample_name();
+	   my %dbxref_po = $sample->get_dbxref_related('PO');
+	   foreach my $dbxref_id (keys %dbxref_po) 
+	   {
+	       $data{$dbxref_po{$dbxref_id}} = 
+			 ${$experiments{$exp_id}}{'median'}};
+	   }
+       }
    }
-   return \%data, \%PO_term_to_full_term;
+   return \%data;
 }
 
 #Matches PO terms with their children
@@ -179,16 +136,15 @@ sub _match_PO_terms_with_children
 #Uses Bio::Chado::Schema to find the order of terms and their children
 sub _get_PO_terms_childs_and_order
 {
-   my ($self, $PO_term_to_full_term_ref, $full_term_to_PO_term_ref) = @_;
+   my $self = shift;
    my $PO_terms_childs_ref = {};
    my $PO_term_order_ref = [];
    my $root_cv = 
 	 $self->schema->resultset('General::Dbxref')->find(
 		 {accession => (pop $self->data_PO_terms)})->cv_term->root;
-   my ($PO_terms_childs_ref, $order_ref) = 
+   my ($PO_terms_childs_ref, $PO_term_order_ref) = 
        $self->_update_PO_terms_childs($PO_terms_childs_ref, $PO_cv_term, 
-					 $PO_term_to_full_term_ref,
-					    $PO_term_order_ref);
+					               $PO_term_order_ref);
    my @PO_terms = ($root_cv->direct_children);
    for my $rs (@PO_terms)
    {
@@ -201,9 +157,7 @@ sub _get_PO_terms_childs_and_order
          @PO_terms = (@PO_terms, $PO_cv_term->direct_children);
          $PO_terms_childs_ref = 
 	    $self->_update_PO_terms_childs($PO_terms_childs_ref,
- 				 	      $PO_cv_term, 
-						$PO_term_to_full_term_ref,
-								 $order_ref);
+ 				 	      $PO_cv_term, $PO_term_order_ref);
       }
    }
    $PO_terms_childs_ref;
@@ -212,15 +166,16 @@ sub _get_PO_terms_childs_and_order
 #Updates PO_terms_child
 sub _update_PO_terms_childs
 {
-   my ($self, $PO_terms_childs_ref, $cv_term, $PO_term_to_full_term_ref, 
-							$order_ref) = @_;
+   my ($self, $PO_terms_childs_ref, $cv_term, $order_ref) = @_;
+   my %PO_term_in_picture = map {$_ => 1} 
+			      $self->get_list_of_all_PO_terms_in_picture;
    my $accession = $cv_term->dbxref->accession;
-   if (%$PO_term_to_full_term_ref{$accession})
+   if ($PO_term_in_picture{$accession})
    {
-      push @{$order_ref}, @{%$PO_term_to_full_term_ref{$accession}};
+      push @{$order_ref}, $accession;
       my @child_accession_list = 
-	 _get_children_accession_from_rs($cv_term->recursive_children, 
-						$PO_term_to_full_term_ref);
+          $self->_get_children_accession_from_rs(
+		    $cv_term->recursive_children, \%PO_term_in_picture);
       $$PO_terms_childs_ref{$accession} = \@child_accession_list;
    }
    return $PO_terms_childs_ref, $order_ref;
