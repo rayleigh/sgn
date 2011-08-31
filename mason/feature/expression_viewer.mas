@@ -3,11 +3,15 @@
 <div style="margin-left: 30px">
 <table summary="" border="0" cellpadding="5" cellspacing="5">
 <tr>
-% @titles=['Image Source', 'Mode', 'Gene One Id', 'Gene Two Id'];
-% for my $title (@$titles) {
+<%perl>
+@titles= ('Image Source', 'Mode', 'Experiment', 'Gene One Id', 
+	        'Gene Two Id', 'Threshold', 'Signal mask', 
+		          'Threshold override', 'Signal mask on');
+</%perl>
+%for my $title (@$titles) {
 <th><% $title %></th>  
 %}
-<th>Override<input type = "checkbox" name = "override" /></th>
+<th>Override</th>
 <th>Mask signal<input type = "checkbox" name = "mask_signal_on" /></th>
 </tr>
 <tr>
@@ -24,6 +28,9 @@
 % foreach my $option ($$drop_box_options{$drop_box_type}) {
    <option><% $option %></option>
 % } }
+<td>
+<input type = "text" name = "exp_name" value = "<% $exp_name %>" /> 
+</td>
 <td>
 <input type = "text" name = "micro_one" value = "<% $micro_one %>" />
 </td>
@@ -44,13 +51,13 @@ disabled
 % }
 />
 </td>
+<td><input type = "checkbox" name = "override" /></td>
+<td><input type = "checkbox" name = "mask_signal_on" /></td>
 <td><input type = "submit" value = "Fetch Image"></td>
 </form>
 </tr>
 %unless ($filled_correctly{$threshold} || $filled_correctly{$signal_mask}) {
 <tr>
-<td></td>
-<td></td>
 <td></td>
 <td></td>
 %for my $field (keys %$filled_correctly) {
@@ -61,8 +68,9 @@ disabled
 %} else {
 <td></td>
 %}}
+<td></td>
+<td></td>
 </tr>
-%}
 <tr>
 <td>
 <table cellpadding = 5>
@@ -78,7 +86,7 @@ disabled
 %}
 </table>
 </td>
-<td colspan = '5', rowspan = '6'>
+<td colspan = '<% scalar @$titles %>', rowspan = '6'>
 <img source = "<% $image_name_to_image_source{$cur_image_name} %>" 
 	alt = "<% $cur_image_name %>" usemap = "#picture_links" />
 <map name="picture_links">
@@ -94,14 +102,16 @@ disabled
 <%args>
 @image_list
 @modes = ('Absolute')
+$exp_name => ''
 $micro_one => ''
 $micro_two => ''
-$threshold => -9**9**9
-$signal_mask => -9**9**9
+$threshold => -1
+$signal_mask => -1
 $cur_image_name = ''
 $cur_image_source => ''
 $cur_mode = ''
 $coord_of_img_links_ref = ''
 $legend_ref = ''
-%filled_correctly => (threshold => 1, signal_mask => 1)
+%filled_correctly => (exp_name => 1, micro_one => 1, 
+			micro_two => 1, threshold => 1, signal_mask => 1)
 </%args> 
