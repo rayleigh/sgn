@@ -256,19 +256,19 @@ sub _get_relative_legend_outline
              #$avg_y += $temp_y;
 	     #if ($temp_x > $max_x)
              #{
-	         $max_x = $temp_x;
+	         #$max_x = $temp_x;
 	     #}
 	     #elsif ($temp_x < $min_x || $min_x == -1)
  	     #{
-		 $min_y = $temp_y;
+		 #$min_y = $temp_y;
 	     #}
 	     #if ($temp_y > $may_y)
 	     #{
-		 $may_y = $temp_y;
+		 #$may_y = $temp_y;
 	     #}
 	     #elsif ($temp_y < $min_y || $min_y == -1)
 	     #{
-		 $min_y = $temp_y;
+		 #$min_y = $temp_y;
 	     #}
        #}
    #}
