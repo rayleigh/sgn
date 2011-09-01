@@ -4,10 +4,16 @@ use strict;
 use warnings;
 use CXGN::GEM::Schema;
 use CXGN::GEM::Experiment;
+use Config::General;
 
-my $schema_list = 'gem,biosource,metadata,public';
+my $conf = new Config::General('~/cxgn/sgn/sgn.conf');
+my %stored_info = $conf->getall; 
+my ($dsn, $user, $password) = 
+	($stored_info{'DatabaseConnection'}{'sgn_test'}{'dsn'},
+	    $stored_info{'DatabaseConnection'}{'sgn_test'}{'user'},
+	        $stored_info{'DatabaseConnection'}{'sgn_test'}{'password'});
 
-my $schema = CXGN::GEM::Schema->connect(sub{ $dbh },
+my $schema = Bio::Chado::Schema->connect($dsn, $user,
                    { on_connect_do => ["SET search_path TO $schema_list"] });
 
 open DATAFILE, "<", 'A10063_at_median_expr_level_and_exp_id.txt';
@@ -22,9 +28,10 @@ close DATAFILE;
 
 open OUTFILE, ">", 'PO_terms_to_data for A10063.txt';
 my @experiments = keys %experiment_to_data;
+my $exp = CXGN::GEM::Experiment->new($schema);
 foreach my $exp_id (@experiments) 
 {
-   my $exp = CXGN::GEM::Experiment->new($schema, $exp_id);
+   $exp->set_experiment_id($exp_id);
    my %exp_po = ();
    my @targets = $exp->get_target_list();
 

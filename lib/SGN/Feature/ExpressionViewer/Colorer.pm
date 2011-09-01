@@ -24,7 +24,7 @@ sub change_color
    for my $coord (@$coord_ref)
    {
       my ($x, $y) = split(/,/, $coord);
-      if ($self->pixel_selected_has_right_color($x, $y, $red, $green, $blue))
+      if ($self->_pixel_selected_has_right_color($x, $y, $red, $green, $blue))
       {
          my $new_color = 
 	      $self->image->colorAllocate($new_red, $new_green, $new_blue);
@@ -33,12 +33,26 @@ sub change_color
    }
 }
 
-#Tests whether pixel selected has the right RGB values
-sub pixel_selected_has_right_color
+sub createMosiac
 {
-   my ($self, $x, $y, $red, $green, $blue) = @_;
-   my @color = $self->image->rgb($self->image->getPixel($x,$y));
-   return $red == $color[0] and $green == $color[1] and $blue == $color[2];
+   my $self, $img_list_ref = @_;
+   my ($width, $height) = $self->image->getBounds;
+   my @img_list = @$img_list_ref;
+   my $num_img = scalar @img_list;
+   my ($num_cols, $num_rows) = $self->get_closet_square_factors($num_img, 
+								  $num_img);
+   $num_rows = ($num_rows * $num_cols == $num_exp ) ?
+                  $num_rows : ceil($num_exp / $num_cols);
+
+   my $mosiac = GD::Image->new($num_col * $width, $num_row * $height, 1);
+   my $i = 0;
+   for my $img (@img_list)
+   {
+      my ($img_x_loc, $img_y_loc) = (($i % $num_cols), floor($i/$num_cols));
+      $mosiac->copy($img, $img_x_loc, $img_y_loc, 0, 0, $width, $height);
+      $i++;
+   }
+   return $mosiac;
 }
 
 #Writes the image in the outfile if specified or in the image source
@@ -57,6 +71,28 @@ sub writeImageAsPNGFile
    binmode $PNGFILE;
    print $PNGFILE $png_data;
    close $PNGFILE;
+}
+
+#Tests whether pixel selected has the right RGB values
+sub _pixel_selected_has_right_color
+{
+   my ($self, $x, $y, $red, $green, $blue) = @_;
+   my @color = $self->image->rgb($self->image->getPixel($x,$y));
+   return $red == $color[0] and $green == $color[1] and $blue == $color[2];
+}
+
+sub _get_closest_square_factors
+{
+   my ($self, $num, $original_num) = @_;
+   my $x = ceil(sqrt($num));
+   my $y = $num/$x;
+   while (floor($y) != ceil($y))
+   {
+      $x++;
+      $y = $num/$x;
+   }
+   return ($x, $y) if $x - $y < 5;
+   return $self->get_closet_square_factors($self, ($num - 1), $original_num);
 }
 
 __PACKAGE__->meta->make_immutable;

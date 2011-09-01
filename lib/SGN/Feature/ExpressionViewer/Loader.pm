@@ -1,7 +1,6 @@
 package SGN::Feature::ExpressionViewer::Loader;
 use Moose;
 use Config::General;
-use Bio::Chado::Schema::Cv;
 use Bio::Chado::Schema;
 use CXGN::GEM::Schema;
 use CXGN::GEM::Expression;

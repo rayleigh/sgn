@@ -99,15 +99,23 @@ sub _build_colorer
 #Returns a hash ref with info on making a legend for the picture
 sub make_absolute_picture
 {
-   my ($self, $threshold, $override, $mask_ratio, $grey_mask_on) = @_;
-   $self->colorer->reset_image;
+   my ($self, $threshold, $override, $mask_ratio, 
+          			        $grey_mask_on, $guide_ref) = @_;
    my ($color_conversion_table, $min_color_ref, $max_color_ref, $max) = 
 	 $self->converter->calculate_absolute($threshold, $override, 
-					         $grey_mask_on, $mask_ratio); 
-   $self->_change_image($color_conversion_table);
+					         $grey_mask_on, $mask_ratio);
+   my @img_list = ();
+   for my $exp (keys %$guide_ref)
+   {
+      my $color_ref = $$color_conversion_table{$exp};
+      $self->colorer->reset_image;
+      $self->_change_PO_terms_in_image_to_color($$guide_ref{}, $color_ref);
+      push @img_list, $self->colorer->$image;
+   }
+   $self->colorer->image($self->colorer->createMosiac(\@img_list));
    $self->_get_absolute_legend_outline($self->converter->get_min, $max, 
-					       $threshold, $min_color_ref, 
-							      $max_color_ref); 
+   					         $threshold, $min_color_ref, 
+   							      $max_color_ref); 
 }
 
 #Makes a picture showing the relative expression levels of a gene
@@ -155,6 +163,41 @@ sub _change_image
       if ($color_of_picture_PO_terms{$PO_term})
       {
          $color_of_picture_PO_terms{$PO_term} = $converted_color; 
+      }
+      else
+      {
+         $self->note_term_not_shown($PO_term);
+      }
+      for my $child_term (@{$self->PO_terms_childs->{$PO_term}})
+      {
+	 if ($color_of_picture_PO_terms{$child_term})
+	 {
+            $color_of_picture_PO_terms{$child_term} = $converted_color;
+	 }
+      }
+   }
+   for my $term (keys %color_of_picture_PO_terms)
+   {
+       my $current_color = $self->PO_term_to_color->{$term}; 
+       $self->colorer->change_color(
+			     $self->PO_term_pixel_location->{$term},
+				split(/,/, $current_color),
+			         @{$color_of_picture_PO_terms{$term}});
+   }
+}
+
+#Changes the image according to $color_conversion_table
+sub _change_PO_terms_in_image_to_color
+{
+   my ($self, $PO_terms_list_ref, $converted_color_ref) = @_;
+   $self->PO_terms_not_shown([]);
+   my %color_of_picture_PO_terms = map{$_  => [255,255,255]} 
+				      $self->picture_PO_terms;
+   for my $PO_term (@$PO_terms_list_ref)
+   {
+      if ($color_of_picture_PO_terms{$PO_term})
+      {
+         $color_of_picture_PO_terms{$PO_term} = $converted_color_ref; 
       }
       else
       {
@@ -241,53 +284,6 @@ sub _get_relative_legend_outline
    $outline{$max} = ($max_is_dif_color) ? "255,0,0":join(",", @$max_colors); 
    return \%outline;
 }
-
-#sub _searching_for_coord
-#{
-   #my ($self, $red, $green, $blue, @coords) = @_;
-   #my $color_index = $self->image->colorExact($red, $green, $blue);
-   #my ($avg_x, $avg_y, $max_x, $max_y, $min_y, $min_x) = (0,0,0,0,-1,-1);
-   #for my $coord (@coords)
-   #{
-       #if ($coord =~ /(.*?),(.*)/)
-       #{
-	     #my ($temp_x, $temp_y) = ($1, $2);
-             #$avg_x += $temp_x;
-             #$avg_y += $temp_y;
-	     #if ($temp_x > $max_x)
-             #{
-	         #$max_x = $temp_x;
-	     #}
-	     #elsif ($temp_x < $min_x || $min_x == -1)
- 	     #{
-		 #$min_y = $temp_y;
-	     #}
-	     #if ($temp_y > $may_y)
-	     #{
-		 #$may_y = $temp_y;
-	     #}
-	     #elsif ($temp_y < $min_y || $min_y == -1)
-	     #{
-		 #$min_y = $temp_y;
-	     #}
-       #}
-   #}
-   #$avg_x /= @coords;
-   #$avg_y /= @coords;
-   #my ($x, $y, $i, $pi_over_4) = (int($avg_x), int($avg_y), 0, atan2(1,1));
-   #while (
-   #!($self->image->pixel_selected_has_right_color($x, $y, $red, $green, $blue))         #and $x > min_x and $x < $max_x 
-		#and $y < $max_y and $x < max_x)
-   #{
-        #($x, $y) = (cos($pi_over_4 * $i), sin($pi_over_4 * $i));
-	#$x = ($x >= 0) ? ceil($x) : floor($x);
-        #$x = $x * (int($i/8) + 1) + $avg_x;  
-        #$y = ($y >= 0) ? ceil($y) : floor($y);
-	#$y = $y * (int($i/8) + 1) + $avg_y;
-	#$i++;
-   #}
-   #if 
-#}
 
 __PACKAGE__->meta->make_immutable;
 1;
