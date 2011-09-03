@@ -1,6 +1,7 @@
 package SGN::Feature::ExpressionViewer::Colorer;
 use Moose;
 use GD::Image;
+use POSIX;
 
 has 'image_source' => (isa => "Str", is => "ro", required => 1);
 has 'image' => (isa => "GD::Image", is => "rw", lazy_build => 1);
@@ -33,22 +34,26 @@ sub change_color
    }
 }
 
+#Creates an image combining list of images
+#Note: make sure all images are independent of each other so if 
+#using the same image, use self->reset_image before modifying it again
 sub createMosiac
 {
-   my $self, $img_list_ref = @_;
+   my ($self, $img_list_ref) = @_;
    my ($width, $height) = $self->image->getBounds;
    my @img_list = @$img_list_ref;
    my $num_img = scalar @img_list;
-   my ($num_cols, $num_rows) = $self->get_closet_square_factors($num_img, 
+   my ($num_cols, $num_rows) = $self->_get_closest_square_factors($num_img, 
 								  $num_img);
-   $num_rows = ($num_rows * $num_cols == $num_exp ) ?
-                  $num_rows : ceil($num_exp / $num_cols);
+   $num_rows = ($num_rows * $num_cols == $num_img ) ?
+                  $num_rows : ceil($num_img / $num_cols);
 
-   my $mosiac = GD::Image->new($num_col * $width, $num_row * $height, 1);
+   my $mosiac = GD::Image->new($num_cols * $width, $num_rows * $height, 1);
    my $i = 0;
    for my $img (@img_list)
    {
-      my ($img_x_loc, $img_y_loc) = (($i % $num_cols), floor($i/$num_cols));
+      my ($img_x_loc, $img_y_loc) = (($i % $num_cols) * $width, 
+					floor($i/$num_cols) * $height);
       $mosiac->copy($img, $img_x_loc, $img_y_loc, 0, 0, $width, $height);
       $i++;
    }

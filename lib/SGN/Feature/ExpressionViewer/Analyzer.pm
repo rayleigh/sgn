@@ -109,8 +109,8 @@ sub make_absolute_picture
    {
       my $color_ref = $$color_conversion_table{$exp};
       $self->colorer->reset_image;
-      $self->_change_PO_terms_in_image_to_color($$guide_ref{}, $color_ref);
-      push @img_list, $self->colorer->$image;
+      $self->_change_PO_terms_in_image_to_color($$guide_ref{$exp}, $color_ref);
+      push @img_list, $self->colorer->image;
    }
    $self->colorer->image($self->colorer->createMosiac(\@img_list));
    $self->_get_absolute_legend_outline($self->converter->get_min, $max, 
@@ -207,7 +207,7 @@ sub _change_PO_terms_in_image_to_color
       {
 	 if ($color_of_picture_PO_terms{$child_term})
 	 {
-            $color_of_picture_PO_terms{$child_term} = $converted_color;
+            $color_of_picture_PO_terms{$child_term} = $converted_color_ref;
 	 }
       }
    }

@@ -4,39 +4,42 @@
 <table summary="" border="0" cellpadding="5" cellspacing="5">
 <tr>
 <%perl>
-@titles= ('Image Source', 'Mode', 'Experiment', 'Gene One Id', 
+my @titles= ('Image Name', 'Mode', 'Gene One Id', 
 	        'Gene Two Id', 'Threshold', 'Signal mask', 
 		          'Threshold override', 'Signal mask on');
 </%perl>
-%for my $title (@$titles) {
+%for my $title (@titles) {
 <th><% $title %></th>  
 %}
-<th>Override</th>
-<th>Mask signal<input type = "checkbox" name = "mask_signal_on" /></th>
+<th></th>
 </tr>
 <tr>
-<form method="POST" action= "/ " name = "eFP_requests">
+<form method="POST" action= "/expression_viewer/submit" name = "eFP_requests">
 <%perl>
-@drop_boxes = ['image_selected', 'mode'];
-%drop_box_options = {'image_selected' => @image_list, 'mode' => @modes};
-%drop_box_option_selected = {'image_selected' => $cur_image_name,
-						   'mode' => $cur_mode};
+my @drop_boxes = ('image_selected', 'mode');
+my %drop_box_options = ('image_selected' => \@image_list, 'mode' => \@modes);
+my %drop_box_option_selected = ('image_selected' => $cur_image_name,
+						   'mode' => $cur_mode);
 </%perl>
-%foreach my $drop_box_type (@$drop_boxes) {
+%for my $drop_box_type (@drop_boxes) {
 <td><select name = "<% $drop_box_type %>" 
-	selected = "<% $$drop_box_option_selected{$drop_box_type} %>" >
-% foreach my $option ($$drop_box_options{$drop_box_type}) {
-   <option><% $option %></option>
-% } }
-<td>
-<input type = "text" name = "exp_name" value = "<% $exp_name %>" /> 
-</td>
+	selected = "<% $drop_box_option_selected{$drop_box_type} %>" >
+% for my $option (@{$drop_box_options{$drop_box_type}}) {
+% if ($option eq $drop_box_option_selected{$drop_box_type}) {
+   <option selected>
+% } else {
+   <option>
+% }
+<% $option %></option>
+%}
+</select></td>
+% }
 <td>
 <input type = "text" name = "micro_one" value = "<% $micro_one %>" />
 </td>
 <td>
 <input type = "text" name = "micro_two" value = "<% $micro_two %>"
-% unless ($ARGS{mode} eq 'comparison') {
+% unless ($ARGS{cur_mode} eq 'comparison') {
 disabled
 %}
 />
@@ -56,11 +59,10 @@ disabled
 <td><input type = "submit" value = "Fetch Image"></td>
 </form>
 </tr>
-%unless ($filled_correctly{$threshold} || $filled_correctly{$signal_mask}) {
 <tr>
 <td></td>
 <td></td>
-%for my $field (keys %$filled_correctly) {
+%for my $field (keys %filled_correctly) {
 %unless ($filled_correctly{$field}) {
 <td style = "color:red; font-size:10px">
 <% ucfirst $field %> is filled incorrectly
@@ -86,32 +88,37 @@ disabled
 %}
 </table>
 </td>
-<td colspan = '<% scalar @$titles %>', rowspan = '6'>
-<img source = "<% $image_name_to_image_source{$cur_image_name} %>" 
+<td colspan = '<% scalar @titles %>', rowspan = '6'>
+<img src = "<% $cur_image_source %>" 
 	alt = "<% $cur_image_name %>" usemap = "#picture_links" />
 <map name="picture_links">
-%for my $coord (keys %$coord_of_img_links_ref) { 
-   <area shape = "polygon" coords = "<% $coord %>" 
-		    href = "<% $$coord_of_img_links_ref{$coord} %>" />
+%for my $coord (@$order_of_coord_ref) { 
+%if ($coord =~ s/c//) {
+<area shape = "circle"
+%} else {
+<area shape = "polygon" 
 %}
+           coords = "<% $coord %>"
+                    href = "<% $$coord_of_img_links_ref{$coord} %>" />
+%}
+</map>
 </td>
 </tr>
 </table>
 </div>
 
 <%args>
-@image_list
-@modes = ('Absolute')
-$exp_name => ''
+@image_list => ()
+@modes => ('Absolute')
 $micro_one => ''
 $micro_two => ''
 $threshold => -1
 $signal_mask => -1
-$cur_image_name = ''
+$cur_image_name => ''
 $cur_image_source => ''
-$cur_mode = ''
-$coord_of_img_links_ref = ''
-$legend_ref = ''
-%filled_correctly => (exp_name => 1, micro_one => 1, 
-			micro_two => 1, threshold => 1, signal_mask => 1)
+$cur_mode => ''
+$coord_of_img_links_ref => ''
+$order_of_coord_ref => ''
+$legend_ref => {}
+%filled_correctly => (micro_one => 1, micro_two => 1, threshold => 1, signal_mask => 1)
 </%args> 

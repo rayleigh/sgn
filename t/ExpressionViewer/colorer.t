@@ -36,20 +36,27 @@ binmode $fh;
 print $fh $pngdata;
 close $fh;
 
+my @list_of_img = ();
+
 #Tests the Colorer with the file of the three rectangles created before
 my $highlighter = SGN::Feature::ExpressionViewer::Colorer->new('image_source' => $testoutfile);
-can_ok($highlighter, qw(change_color writeImageAsPNGFile pixel_selected_has_right_color reset_image _build_image));
+can_ok($highlighter, qw(change_color writeImageAsPNGFile _pixel_selected_has_right_color reset_image _build_image _get_closest_square_factors));
 
 diag("Trying to change non-existing color");
 $highlighter->change_color($color_to_pixel{join(",",@test_color)},0,2,5,@test_color);
+push @list_of_img, $highlighter->image;
 noChangesOccur();
 my $fHandle = File::Temp->new(SUFFIX=>'.png');
 $highlighter->writeImageAsPNGFile();
 $highlighter->writeImageAsPNGFile($fHandle->filename);
 diag("Should have no change file: ".$fHandle->filename);
 
+diag("Reseting image");
+$highlighter->reset_image;
+
 diag("Trying to change color to black");
 $highlighter->change_color($color_to_pixel{join(",",@test_color)},@test_color,0,0,0);
+push @list_of_img, $highlighter->image;
 $fHandle = File::Temp->new(SUFFIX=>'.png');
 $highlighter->writeImageAsPNGFile();
 $highlighter->writeImageAsPNGFile($fHandle->filename);
@@ -64,6 +71,7 @@ $highlighter->reset_image;
 
 diag("Trying to change from to new color");
 $highlighter->change_color($color_to_pixel{join(",",@test_color)},@test_color, @new_test_color);
+push @list_of_img, $highlighter->image;
 cmp_ok($highlighter->image->colorExact(@new_test_color), '!=', -1, "New color did not result.");
 
 diag("Trying to save changes.");
@@ -71,6 +79,13 @@ $fHandle = File::Temp->new(SUFFIX=>'.png');
 $highlighter->writeImageAsPNGFile();
 $highlighter->writeImageAsPNGFile($fHandle->filename);
 diag("Changed to new color file: ".$fHandle->filename);
+close $fHandle;
+
+$highlighter->image($highlighter->createMosiac(\@list_of_img));
+$fHandle = File::Temp->new(SUFFIX=>'.png');
+$highlighter->writeImageAsPNGFile();
+$highlighter->writeImageAsPNGFile($fHandle->filename);
+diag("Mosiac image: ".$fHandle->filename);
 close $fHandle;
 
 #Checks to see if no rectangles' colors are changed
