@@ -165,10 +165,10 @@ sub submit :Path('/expression_viewer/submit')
         {
             #$signal_mask = 0 unless $signal_mask;
 	    #print STDERR "$threshold\n";  
-            #unless ($self->_exp_PO_guide_ref_has_duplicates(
-	    #			$exp_PO_guide_ref, 
-	    #			   $self->analyzer->PO_terms_childs))
-            #{    
+            unless ($self->_exp_PO_guide_ref_has_duplicates(
+	    			$exp_PO_guide_ref, 
+	    			   $self->analyzer->PO_terms_childs))
+            {    
                 $c->stash->{'error_message'} = ''; 
                 my $legend_ref = 
 		   eval('$self->analyzer->make_' . (lcfirst $mode) . 
@@ -186,20 +186,20 @@ sub submit :Path('/expression_viewer/submit')
                 close $fHandle;
                 print STDERR "$img_src";
                 $c->stash->{'legend_ref'} = $legend_ref;
-            #}
-	    #else
-	    #{
-            #    $c->stash->{'error_message'} = 
-	    #		"The experiment has duplicate PO terms or related PO terms.";
-            #    unless ($self->current_img_source)
-            #    {
-	    #	   $img_src = $self->loader->img_name_to_src->{$img_name};
-            #    }
-            #    else
-            #    {
-            #       $img_src = $self->current_img_source;
-            #    }
-	    #}
+            }
+	    else
+	    {
+                $c->stash->{'error_message'} = 
+	    		"The experiment has duplicate PO terms or related PO terms.";
+                unless ($self->current_img_source)
+                {
+	    	   $img_src = $self->loader->img_name_to_src->{$img_name};
+                }
+                else
+                {
+                   $img_src = $self->current_img_source;
+                }
+	    }
             
         }
         else

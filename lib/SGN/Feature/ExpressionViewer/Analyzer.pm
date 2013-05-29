@@ -119,7 +119,6 @@ sub make_absolute_picture
          my @converted_color = @$color_ref;
          $$color_conversion_table{$PO_term} = \@converted_color;
       }
-      #$self->_change_PO_terms_in_image_to_color($$guide_ref{$exp}, $color_ref);
    }
    $self->_change_image($color_conversion_table);
    $self->_get_absolute_legend_outline($self->converter->get_min, $max, 
@@ -131,11 +130,20 @@ sub make_absolute_picture
 #Returns a hash ref with info on making a legend for the picture
 sub make_relative_picture
 {
-   my ($self, $threshold, $override, $mask_ratio, $grey_mask_on) = @_;
+   my ($self, $threshold, $override, $mask_ratio, $grey_mask_on, $guide_ref) = @_;
    $self->colorer->reset_image;
    my ($color_conversion_table, $min_color_ref, $max_color_ref, $max) = 
 	 $self->converter->calculate_relative($threshold, $override, 
 					         $grey_mask_on, $mask_ratio); 
+   for my $exp (keys %$guide_ref)
+   {
+      my $color_ref = $$color_conversion_table{$exp};
+      for my $PO_term (@{$$guide_ref{$exp}})
+      {
+	 my @converted_color = @$color_ref;
+	 $$color_conversion_table{$PO_term} = \@converted_color;
+      }
+   }
    $self->_change_image($color_conversion_table);
    $self->_get_relative_legend_outline($self->converter->get_min, $max, 
 					    $self->converter->get_median,
@@ -147,12 +155,21 @@ sub make_relative_picture
 #Returns a hash ref with info on making a legend for the picture
 sub make_comparison_picture
 {
-   my ($self, $threshold, $override, $mask_ratio, $grey_mask_on) = @_;
+   my ($self, $threshold, $override, $mask_ratio, $grey_mask_on, $guide_ref) = @_;
    $self->colorer->reset_image;
    my ($color_conversion_table, $min_color_ref, 
 		$max_color_ref, $max, $min, $median) = 
       	  $self->converter->calculate_comparison($self->compare_converter, 
 	    		  $threshold,$override, $grey_mask_on, $mask_ratio);   
+   for my $exp (keys %$guide_ref)
+   {
+      my $color_ref = $$color_conversion_table{$exp};
+      for my $PO_term (@{$$guide_ref{$exp}})
+      {
+	 my @converted_color = @$color_ref;
+	 $$color_conversion_table{$PO_term} = \@converted_color;
+      }
+   }
    $self->_change_image($color_conversion_table);
    $self->_get_relative_legend_outline($min, $max, $median, $threshold, 
 				            $min_color_ref, $max_color_ref);
@@ -198,13 +215,14 @@ sub _change_image
 }
 
 #Changes the image according to $color_conversion_table
+#Deprecated
 sub _change_PO_terms_in_image_to_color
 {
    my ($self, $PO_terms_list_ref, $converted_color_ref) = @_;
    $self->PO_terms_not_shown([]);
    my %color_of_picture_PO_terms = map{$_  => [255,255,255]} 
 				      $self->picture_PO_terms;
-   print STDERR "$PO_terms_list_ref";
+   #print STDERR "$PO_terms_list_ref";
    for my $PO_term (@$PO_terms_list_ref)
    {
       if ($color_of_picture_PO_terms{$PO_term})
