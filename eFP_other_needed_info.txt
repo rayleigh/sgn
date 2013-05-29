@@ -1,0 +1,11 @@
+Stem and flower	c	PO0009031	
+Stem and flower	c	PO0005679	
+Stem and flower	c	PO0009032	
+Stem and flower	c	PO0005352	
+Stem and flower	c	PO0005417	
+Stem and flower	c	PO0009066	
+Stem and flower	c	PO0009047	
+Stem and flower	c	PO0006109	
+Stem and flower	c	PO0005708	
+Stem and flower	c	PO0009073	
+Stem and flower	o	PO0009073,PO0005679,PO0009066,PO0005352,PO0005417,PO0009032,PO0009031,PO0005708,PO0009047,PO0006109
