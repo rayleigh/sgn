@@ -9,6 +9,7 @@ use strict;
 use warnings;
 use Test::More qw | no_plan |;
 use lib 't/lib/';
+use Data::Dumper;
 #diag('Sees if it can use the modules');
 BEGIN {
    use_ok('SGN::Feature::ExpressionViewer::Colorer');
@@ -196,10 +197,11 @@ can_ok($test_analyzer, qw(make_absolute_picture make_relative_picture make_compa
 my $num_terms = scalar(keys(%data));
 
 #Tests for no settings on 
-$test_analyzer->make_absolute_picture(0,0,0,0);
+my $outline = $test_analyzer->make_absolute_picture(0,0,0,0);
 my $fHandle = File::Temp->new(SUFFIX=>'.png');
 $test_analyzer->colorer->writeImageAsPNGFile($fHandle->filename);
 $important_info{'Ab image (0,0,0,0)'} = $fHandle->filename;
+$important_info{'Ab image (0,0,0,0) outline'} = Dumper($outline); 
 close $fHandle; 
 my %temp = map{$_ => 1} (@unused_data_PO_terms, 
 			    @{$test_analyzer->PO_terms_not_shown});

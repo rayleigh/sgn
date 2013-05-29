@@ -168,10 +168,10 @@ sub _load_data_into_stats_obj
 sub _threshold_is_valid
 {
    my ($self, $threshold) = @_;
-   my $fifth_percentile = $self->stats_obj->percentile(5);
+   my $tenth_percentile = $self->stats_obj->percentile(10);
    my $max = $self->stats_obj->max();
-   return ($threshold and $threshold > $fifth_percentile 
-				     and $threshold <= $max);
+   return ($threshold && $threshold > $tenth_percentile 
+				     && $threshold <= $max);
 }
 
 #Returns the max according to user specification if valid or user wants

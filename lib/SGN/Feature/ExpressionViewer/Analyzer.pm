@@ -3,6 +3,7 @@ use Moose;
 use SGN::Feature::ExpressionViewer::Converter;
 use SGN::Feature::ExpressionViewer::Colorer;
 use POSIX;
+#use Data::Dumper;
 
 has 'image_source' => (isa => 'Str', is => 'rw', required => 1);
 has 'data' => (isa => 'HashRef[Str]', is => 'rw', required => 1, 
@@ -13,7 +14,8 @@ has 'data' => (isa => 'HashRef[Str]', is => 'rw', required => 1,
 		              $self->converter->gene_signal_in_tissue(
 							        $e_data_ref);
 			      $self->converter->control_signal_for_tissue(
-								$c_data_ref);
+								$c_data_ref) 
+							      if $c_data_ref;
 			     });
 has 'compare_data' => (isa => 'HashRef[Str]', is => 'rw', default => sub {{}},
 		       trigger => sub{my $self = shift;
@@ -26,7 +28,8 @@ has 'compare_data' => (isa => 'HashRef[Str]', is => 'rw', default => sub {{}},
 							     $e_data_ref);
 		       		      $self->compare_converter->
 				         control_signal_for_tissue(
-                                                             $c_data_ref);
+                                                             $c_data_ref)
+							   if $c_data_ref;
 				     });
 has 'PO_term_pixel_location' => (isa => 'HashRef[ArrayRef[Str]]', 
 					     is => 'rw', required => 1);
@@ -54,9 +57,10 @@ sub _build_converter
    my $data_ref = $self->data;
    my ($e_data_ref, $c_data_ref) =
 		$self->_parse_data_from_data_ref($data_ref);
-   SGN::Feature::ExpressionViewer::Converter->new(
-	      'gene_signal_in_tissue'=> $e_data_ref,
-		 'control_signal_for_tissue'=> $c_data_ref);
+   my $converter = SGN::Feature::ExpressionViewer::Converter->new(
+	                         'gene_signal_in_tissue'=> $e_data_ref);
+   $converter->control_signal_for_tissue($c_data_ref) if $c_data_ref;
+   return $converter;
 }
 
 #Creates a second converter to hold the comparison gene's data
@@ -66,9 +70,10 @@ sub _build_compare_converter
    my $data_ref = $self->compare_data;
    my ($e_data_ref, $c_data_ref) =
 		$self->_parse_data_from_data_ref($data_ref);
-   SGN::Feature::ExpressionViewer::Converter->new(
-	      'gene_signal_in_tissue'=> $e_data_ref,
-		 'control_signal_for_tissue'=> $c_data_ref);
+   my $converter = SGN::Feature::ExpressionViewer::Converter->new(
+				 'gene_signal_in_tissue'=> $e_data_ref);
+   $converter->control_signal_for_tissue($c_data_ref) if $c_data_ref;
+   return $converter;
 }
 
 #Parses the data so it can be stored in the Converter obj.
@@ -82,7 +87,7 @@ sub _parse_data_from_data_ref
    {
        my @data_sep = split(/,/,$data_hash{$PO_term});
        $experiment_data{$PO_term} = $data_sep[0];
-       $control_data{$PO_term} = $data_sep[1];
+       $control_data{$PO_term} = $data_sep[1] if $data_sep[1];
    }
    return (\%experiment_data, \%control_data);
 }
@@ -104,15 +109,19 @@ sub make_absolute_picture
    my ($color_conversion_table, $min_color_ref, $max_color_ref, $max) = 
 	 $self->converter->calculate_absolute($threshold, $override, 
 					         $grey_mask_on, $mask_ratio);
-   my @img_list = ();
+   #print STDERR Dumper($color_conversion_table);
+   $self->colorer->reset_image;
    for my $exp (keys %$guide_ref)
    {
       my $color_ref = $$color_conversion_table{$exp};
-      $self->colorer->reset_image;
-      $self->_change_PO_terms_in_image_to_color($$guide_ref{$exp}, $color_ref);
-      push @img_list, $self->colorer->image;
+      for my $PO_term (@{$$guide_ref{$exp}})
+      {
+         my @converted_color = @$color_ref;
+         $$color_conversion_table{$PO_term} = \@converted_color;
+      }
+      #$self->_change_PO_terms_in_image_to_color($$guide_ref{$exp}, $color_ref);
    }
-   $self->colorer->image($self->colorer->createMosiac(\@img_list));
+   $self->_change_image($color_conversion_table);
    $self->_get_absolute_legend_outline($self->converter->get_min, $max, 
    					         $threshold, $min_color_ref, 
    							      $max_color_ref); 
@@ -156,11 +165,12 @@ sub _change_image
    $self->PO_terms_not_shown([]);
    my %color_of_picture_PO_terms = map{$_  => [255,255,255]} 
 				      $self->picture_PO_terms;
+   #print STDERR $self->PO_term_order;
+   #print STDERR Dumper($color_conversion_table);
    for my $PO_term (@{$self->PO_term_order})
    {
-     
       my $converted_color = $color_conversion_table->{$PO_term};
-      if ($color_of_picture_PO_terms{$PO_term})
+      if ($color_of_picture_PO_terms{$PO_term} && $converted_color)
       {
          $color_of_picture_PO_terms{$PO_term} = $converted_color; 
       }
@@ -170,7 +180,7 @@ sub _change_image
       }
       for my $child_term (@{$self->PO_terms_childs->{$PO_term}})
       {
-	 if ($color_of_picture_PO_terms{$child_term})
+	 if ($color_of_picture_PO_terms{$child_term} && $converted_color) 
 	 {
             $color_of_picture_PO_terms{$child_term} = $converted_color;
 	 }
@@ -178,6 +188,7 @@ sub _change_image
    }
    for my $term (keys %color_of_picture_PO_terms)
    {
+       print STDERR "$term\n";
        my $current_color = $self->PO_term_to_color->{$term}; 
        $self->colorer->change_color(
 			     $self->PO_term_pixel_location->{$term},
@@ -193,6 +204,7 @@ sub _change_PO_terms_in_image_to_color
    $self->PO_terms_not_shown([]);
    my %color_of_picture_PO_terms = map{$_  => [255,255,255]} 
 				      $self->picture_PO_terms;
+   print STDERR "$PO_terms_list_ref";
    for my $PO_term (@$PO_terms_list_ref)
    {
       if ($color_of_picture_PO_terms{$PO_term})

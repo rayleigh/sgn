@@ -14,7 +14,7 @@ my @titles= ('Image Name', 'Mode', 'Gene One Id',
 <th></th>
 </tr>
 <tr>
-<form method="POST" action= "/expression_viewer/submit" name = "eFP_requests">
+<form method="get" action= "/expression_viewer/submit" name = "eFP_requests">
 <%perl>
 my @drop_boxes = ('image_selected', 'mode');
 my %drop_box_options = ('image_selected' => \@image_list, 'mode' => \@modes);
@@ -59,24 +59,41 @@ disabled
 <td><input type = "submit" value = "Fetch Image"></td>
 </form>
 </tr>
+<%perl>
+my $incorrect_field = '';
+for my $field (keys %filled_correctly) 
+{
+   unless ($filled_correctly{$field}) 
+   {
+      $incorrect_field .= ucfirst $field . '  ';
+   }
+}
+my $message_str = '';
+if ($incorrect_field)
+{
+   $incorrect_field =~ s/  $//;
+   $message_str = 'The following are incorrectly entered:' . $incorrect_field;
+}
+</%perl>
+%if ($message_str || $error_message) {
 <tr>
-<td></td>
-<td></td>
-%for my $field (keys %filled_correctly) {
-%unless ($filled_correctly{$field}) {
-<td style = "color:red; font-size:10px">
-<% ucfirst $field %> is filled incorrectly
+<td style = "color:red; font-size:10px", colspan = <% scalar @titles + 1 %>>
+<% $error_message %> <% $message_str %>
 </td>
-%} else {
-<td></td>
-%}}
-<td></td>
-<td></td>
 </tr>
+%}
 <tr>
-<td>
-<table cellpadding = 5>
-%for my $label (reverse sort keys %$legend_ref) {
+<td colspan = '<% scalar @titles + 1 %>'>
+<table>
+<%perl>
+sub bylabel
+{
+   $a =~ s/\+//;
+   $b =~ s/\+//;
+   $b <=> $a;
+}
+</%perl>
+%for my $label (sort bylabel keys %$legend_ref) {
 <tr>
 <td>
 <div style="width:10px;height:10px;border:1px solid;background:rgb(<% $$legend_ref{$label} %>)"></div>
@@ -88,24 +105,24 @@ disabled
 %}
 </table>
 </td>
-<td colspan = '<% scalar @titles %>', rowspan = '6'>
+<tr>
+<td colspan = '<% scalar @titles + 1 %>', rowspan = '6'>
 <img src = "<% $cur_image_source %>" 
 	alt = "<% $cur_image_name %>" usemap = "#picture_links" />
 <map name="picture_links">
 %for my $coord (@$order_of_coord_ref) { 
 %if ($coord =~ s/c//) {
-<area shape = "circle"
+%my $orig_coord = 'c' . $coord;
+<area shape = "circle" coords = "<% $coord %>"
+   href = "<% $$coord_of_img_links_ref{$orig_coord} %>" />
 %} else {
-<area shape = "polygon" 
-%}
-           coords = "<% $coord %>"
-                    href = "<% $$coord_of_img_links_ref{$coord} %>" />
-%}
+<area shape = "polygon" coords = "<% $coord %>"
+   href = "<% $$coord_of_img_links_ref{$coord} %>" />
+%}}
 </map>
 </td>
 </tr>
 </table>
-</div>
 
 <%args>
 @image_list => ()
@@ -121,4 +138,5 @@ $coord_of_img_links_ref => ''
 $order_of_coord_ref => ''
 $legend_ref => {}
 %filled_correctly => (micro_one => 1, micro_two => 1, threshold => 1, signal_mask => 1)
+$error_message => ''
 </%args> 

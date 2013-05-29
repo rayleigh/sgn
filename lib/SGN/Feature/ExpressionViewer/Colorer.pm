@@ -27,8 +27,10 @@ sub change_color
       my ($x, $y) = split(/,/, $coord);
       if ($self->_pixel_selected_has_right_color($x, $y, $red, $green, $blue))
       {
+	 #print STDERR "$red, $green, $blue, $new_red, $new_green, $new_blue\n";
          my $new_color = 
 	      $self->image->colorAllocate($new_red, $new_green, $new_blue);
+         #print STDERR "$new_color\n";
          $self->image->fill($x, $y, $new_color);
       }
    }

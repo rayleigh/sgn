@@ -1,11 +1,18 @@
 
 <h1>This is a test</h1>
 
-<%perl>
+<form method = "get" action = '/test/submit'>
+<input type = "text" name = "message_box" value = "<% $message %>" />
+<input type = "checkbox" name = "checked" />
+<input type = "submit" value = "Print message below">
+</form>
 
-use strict;
+<div>
+<% $message %>
+</div>
 
-my $message = "This is also a test ";
-print "$message\n";
 
-</%perl>
+
+<%args>
+$message => "This is also a test ";
+</%args>
