@@ -9,18 +9,20 @@ package SGN::Controller::ExpressionViewer;
 use Moose;
 use namespace::autoclean;
 use File::Temp;
+use SGN::ExpressionViewer::Loader;
+use SGN::ExpressionViewer::Analyzer;
 #use Data::Dumper;
 
 $File::Temp::KEEP_ALL = 1;
 
 has 'loader' => (
     is => 'rw',
-    isa => 'SGN::Feature::ExpressionViewer::Loader',
+    isa => 'SGN::ExpressionViewer::Loader',
 );
 
 has 'analyzer' => (
     is => "rw",
-    isa => 'SGN::Feature::ExpressionViewer::Analyzer',
+    isa => 'SGN::ExpressionViewer::Analyzer',
 );
 
 has 'current_img_name' => (
@@ -141,7 +143,7 @@ sub submit :Path('/expression_viewer/submit')
 						  $order_of_coord_ref) = 
                   $self->loader->get_refs_of_required_info($img_name, 
 								$micro_one);
-            $self->analyzer(SGN::Feature::ExpressionViewer::Analyzer->new(
+            $self->analyzer(SGN::ExpressionViewer::Analyzer->new(
 			 'image_source'=> 
 			     $self->loader->img_name_to_src->{$img_name},
 			 'data' => $data_ref,
@@ -272,7 +274,7 @@ sub _build_form
         'order_of_coord_ref' => ${$self->loader->img_info->{$img_name}}[5],
         'cur_mode' => $mode,
         'micro_one' => $micro_one,
-        'template' => '/feature/expression_viewer.mas',
+        'template' => 'expression_viewer/expression_viewer.mas',
     );
     $self->current_img_name($img_name);
     $self->current_micro_one_name($micro_one);
@@ -285,7 +287,7 @@ sub _build_loader
 {
     my ($self, $c) = @_;
     #$self->conf_file refers to conf_file in sgn.conf file
-    $self->loader(SGN::Feature::ExpressionViewer::Loader->new(
+    $self->loader(SGN::ExpressionViewer::Loader->new(
         'bcschema' => $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado'),
         'cgschema' => $c->dbic_schema('CXGN::GEM::Schema', 'sgn_chado'),
         'config_file_name' => $self->{conf_file},
