@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use SGN::Feature::ExpressionViewer::Analyzer;
+use SGN::ExpressionViewer::Analyzer;
 use File::Temp;
 
 $File::Temp::KEEP_ALL = 1;
@@ -25,7 +25,7 @@ close DATA;
 my @order = keys %data;
 my %children;
 
-my $test_analyzer = SGN::Feature::ExpressionViewer::Analyzer->new(
+my $test_analyzer = SGN::ExpressionViewer::Analyzer->new(
 			'image_source'=> 'S.lycopersicum_cv.m82_image.png',
 			'data' => \%data,
 			'PO_term_to_color' => \%PO_term_to_color,

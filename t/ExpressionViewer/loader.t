@@ -4,7 +4,7 @@ use Test::More qw | no_plan |;
 use lib 't/lib/';
 #diag('Sees if it can use the modules');
 BEGIN {
-   use_ok('SGN::Feature::ExpressionViewer::Loader');
+   use_ok('SGN::ExpressionViewer::Loader');
    use_ok('File::Temp', qw/ :seekable /);
    use_ok('CXGN::GEM::Schema');
 }

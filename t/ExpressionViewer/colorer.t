@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Test::More qw | no_plan |;
 use lib 't/lib';
-use SGN::Feature::ExpressionViewer::Colorer;
+use SGN::ExpressionViewer::Colorer;
 use GD::Image;
 use File::Temp qw/ :seekable /;
 
@@ -39,7 +39,7 @@ close $fh;
 my @list_of_img = ();
 
 #Tests the Colorer with the file of the three rectangles created before
-my $highlighter = SGN::Feature::ExpressionViewer::Colorer->new('image_source' => $testoutfile);
+my $highlighter = SGN::ExpressionViewer::Colorer->new('image_source' => $testoutfile);
 can_ok($highlighter, qw(change_color writeImageAsPNGFile _pixel_selected_has_right_color reset_image _build_image _get_closest_square_factors));
 
 diag("Trying to change non-existing color");

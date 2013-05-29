@@ -1,7 +1,7 @@
 #!usr/bin/perl
 
-#Explicitly tests the SGN::Feature::ExpressionViewer::Analyzer 
-#and SGN::Feature::Expression::Converter 
+#Explicitly tests the SGN::ExpressionViewer::Analyzer 
+#and SGN::Expression::Converter 
 #The resulting image should have the maxed color correctly, but not the min
 #because of cutoff.
 
@@ -12,9 +12,9 @@ use lib 't/lib/';
 use Data::Dumper;
 #diag('Sees if it can use the modules');
 BEGIN {
-   use_ok('SGN::Feature::ExpressionViewer::Colorer');
-   use_ok('SGN::Feature::ExpressionViewer::Converter');
-   use_ok('SGN::Feature::ExpressionViewer::Analyzer');
+   use_ok('SGN::ExpressionViewer::Colorer');
+   use_ok('SGN::ExpressionViewer::Converter');
+   use_ok('SGN::ExpressionViewer::Analyzer');
    use_ok('File::Temp', qw/ :seekable /);
 }
 $File::Temp::KEEP_ALL = 1;
@@ -165,7 +165,7 @@ diag("bob is an extraneous PO term to test it");
 close $PO_term_fHandle;
 
 my $test_analyzer = 
-   SGN::Feature::ExpressionViewer::Analyzer->new(
+   SGN::ExpressionViewer::Analyzer->new(
 			       'image_source'=>'test_img.png',
 			       'data'=> \%data,
                                'PO_term_to_color'=> \%PO_term_to_color,
@@ -173,22 +173,22 @@ my $test_analyzer =
                                'PO_terms_childs' => \%child_PO_term,
 			       'PO_term_pixel_location' => \%PO_term_to_pixel);
 diag('Tests whether Analyzer was created');
-isa_ok($test_analyzer, 'SGN::Feature::ExpressionViewer::Analyzer');
+isa_ok($test_analyzer, 'SGN::ExpressionViewer::Analyzer');
 
 diag('Tests whether Converter was created');
-isa_ok($test_analyzer->converter, 'SGN::Feature::ExpressionViewer::Converter');
+isa_ok($test_analyzer->converter, 'SGN::ExpressionViewer::Converter');
 
 diag('Tests whether Converter can do its methods');
 can_ok($test_analyzer->converter, qw(calculate_absolute calculate_relative calculate_comparison get_min_and_max _load_data_into_stats_obj _threshold_is_valid _determine_max _get_ratio_between_control_and_mean));
 
 diag('Tests whether Comparison Converter was created');
-isa_ok($test_analyzer->compare_converter, 'SGN::Feature::ExpressionViewer::Converter');
+isa_ok($test_analyzer->compare_converter, 'SGN::ExpressionViewer::Converter');
 
 diag('Tests whether Comparison Converter can do its methods');
 can_ok($test_analyzer->compare_converter, qw(calculate_absolute calculate_relative calculate_comparison get_min_and_max _load_data_into_stats_obj _threshold_is_valid _determine_max _get_ratio_between_control_and_mean));
 
 diag('Tests if Colorer was created');
-isa_ok($test_analyzer->colorer, 'SGN::Feature::ExpressionViewer::Colorer');
+isa_ok($test_analyzer->colorer, 'SGN::ExpressionViewer::Colorer');
 isa_ok($test_analyzer->colorer->image, 'GD::Image');
 
 diag('Tests whether Analyzer can do its methods');
@@ -426,7 +426,7 @@ $test_analyzer->compare_data(\%comparison);
 
 #Tests to make sure everything's okay
 diag('Tests whether compare_converter was created');
-isa_ok($test_analyzer->compare_converter, "SGN::Feature::ExpressionViewer::Converter");
+isa_ok($test_analyzer->compare_converter, "SGN::ExpressionViewer::Converter");
 
 diag('Tests whether compare_converter can do its methods');
 can_ok($test_analyzer->compare_converter, qw(calculate_absolute calculate_relative calculate_comparison get_min_and_max _load_data_into_stats_obj _threshold_is_valid _determine_max _get_ratio_between_control_and_mean));
@@ -535,7 +535,7 @@ diag("The median is " . $test_analyzer->converter->get_median);
 #Repeat it for the two other calculate, i.e. calculate_relative and
 #calculate_comparison
 #my $testingAnalyzer = 
-#	SGN::Feature::ExpressionViewer:ExpressionDataAnalysis->new(
+#	SGN::ExpressionViewer:ExpressionDataAnalysis->new(
 #		 -'gene_signal_in_tissue' => %testSignalFromTissue,
 #	            -'control_signal_for_tissue' => %controlSignalFromTissue);
 #$testingAnalyzer->calculate_absolute();
